@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -24,6 +25,7 @@
       background: #fff;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px; /* Додав відступ між таблицями */
     }
 
     table {
@@ -129,6 +131,23 @@
   </table>
 </div>
 
+<!-- Нова таблиця для вахти 7*3 -->
+<h1>🗓️ Вахта 7*3 (Зміни)</h1>
+<div class="table-container">
+  <table id="shift7x3Table">
+    <thead>
+      <tr>
+        <th>Час</th>
+        <th>Сьогодні</th>
+        <th>Післязавтра</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- JS додає рядки -->
+    </tbody>
+  </table>
+</div>
+
 <div class="controls">
   <button class="button-danger" onclick="clearTable()">Очистити</button>
   <button onclick="downloadPDF()">Завантажити PDF</button>
@@ -221,6 +240,52 @@
 
   createTable();
   table.addEventListener("input", saveToStorage);
+
+  // Новий код для таблиці вахти 7*3
+  const shiftsToday = {
+    "09:00-12:00": "Дан",
+    "12:00-15:00": "Гуриханян",
+    "15:00-18:00": "Ярик",
+    "18:00-21:00": "Денис/Женя",
+    "21:00-00:00": "Дан",
+    "00:00-03:00": "Гуриханян",
+    "03:00-06:00": "Ярик",
+    "06:00-09:00": "Денис/Женя"
+  };
+
+  const shiftsAfterTomorrow = {
+    "09:00-12:00": "Дан",
+    "12:00-15:00": "Гуриханян",
+    "15:00-18:00": "Юра",
+    "18:00-21:00": "Денис",
+    "21:00-00:00": "Дан",
+    "00:00-03:00": "Гуриханян",
+    "03:00-06:00": "Юра",
+    "06:00-09:00": "Денис"
+  };
+
+  const timeSlots = [
+    "09:00-12:00", "12:00-15:00", "15:00-18:00", "18:00-21:00",
+    "21:00-00:00", "00:00-03:00", "03:00-06:00", "06:00-09:00"
+  ];
+
+  const shift7x3TableBody = document.querySelector("#shift7x3Table tbody");
+
+  function create7x3ShiftTable() {
+    shift7x3TableBody.innerHTML = ""; // Очищаємо існуючі рядки перед додаванням нових
+    timeSlots.forEach(slot => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${slot}</td>
+        <td>${shiftsToday[slot] || ''}</td>
+        <td>${shiftsAfterTomorrow[slot] || ''}</td>
+      `;
+      shift7x3TableBody.appendChild(row);
+    });
+  }
+
+  // Викликаємо функцію для створення нової таблиці
+  create7x3ShiftTable();
 </script>
 
 </body>
