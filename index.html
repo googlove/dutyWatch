@@ -1,154 +1,227 @@
-<!DOCTYPE html><html lang="uk"><head>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Розклад чергувань</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Графік нарядів</title>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
-      background: #f5f7fa;
+      font-family: system-ui, sans-serif;
       margin: 0;
-      padding: 2rem;
-    }h1 {
-  text-align: center;
-  color: #333;
-}
+      padding: 20px;
+      background: #f5f5f5;
+      color: #333;
+    }
 
-.table-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2rem;
-  margin-top: 2rem;
-}
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
 
-table {
-  border-collapse: collapse;
-  width: 300px;
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
+    .table-container {
+      overflow-x: auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 
-table:hover {
-  transform: scale(1.02);
-}
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+    }
 
-th,
-td {
-  padding: 12px;
-  text-align: center;
-  border: 1px solid #e0e0e0;
-}
+    th, td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.95rem;
+    }
 
-th {
-  background-color: #e3f2fd;
-  font-weight: bold;
-}
+    th {
+      background: #2c3e50;
+      color: white;
+    }
 
-td[contenteditable] {
-  background-color: #fafafa;
-  cursor: text;
-}
+    .active {
+      background-color: black;
+      color: black;
+    }
 
-.buttons {
-  text-align: center;
-  margin-top: 2rem;
-}
+    td.editable {
+      background: #f1f1f1;
+    }
 
-button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  margin: 0 10px;
-  transition: background-color 0.3s ease;
-}
+    td.editable:focus {
+      outline: 2px solid #3498db;
+    }
 
-button:hover {
-  background-color: #45a049;
-}
+    button {
+      padding: 12px 20px;
+      margin: 10px 5px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
 
-@media (max-width: 768px) {
-  table {
-    width: 100%;
-  }
-}
+    button:hover {
+      background: #2980b9;
+    }
 
-  </style>
-</head><body>
-  <h1>📋 Розклад чергувань (Пн-Нд)</h1>  <div class="buttons">
-    <button onclick="addTable()">➕ Додати таблицю</button>
-    <button onclick="clearTables()">🗑 Очистити всі</button>
-    <button onclick="downloadPDF()">📄 Завантажити PDF</button>
-  </div>  <div class="table-container" id="tablesContainer"></div>  <script>
-    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя', 'Резерв'];
+    .button-danger {
+      background: #e74c3c;
+    }
 
-    function createTableHTML() {
-      let table = document.createElement('table');
-      let thead = document.createElement('thead');
-      let tbody = document.createElement('tbody');
+    .button-danger:hover {
+      background: #c0392b;
+    }
 
-      const headerRow = document.createElement('tr');
-      ['День', 'Особа 1 👤', 'Особа 2 👤', 'Особа 3 👤'].forEach(text => {
-        const th = document.createElement('th');
-        th.textContent = text;
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
 
-      for (let i = 0; i < 8; i++) {
-        const tr = document.createElement('tr');
-
-        const dayCell = document.createElement('td');
-        dayCell.textContent = days[i] || `День ${i + 1}`;
-        tr.appendChild(dayCell);
-
-        for (let j = 0; j < 3; j++) {
-          const td = document.createElement('td');
-          td.contentEditable = true;
-          td.textContent = '';
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
+    @media (max-width: 600px) {
+      th, td {
+        font-size: 0.8rem;
+        padding: 8px;
       }
 
-      table.appendChild(thead);
-      table.appendChild(tbody);
-      return table;
+      button {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+
+      h1 {
+        font-size: 1.2rem;
+      }
     }
+  </style>
+</head>
+<body>
 
-    function addTable() {
-      const container = document.getElementById('tablesContainer');
-      const newTable = createTableHTML();
-      container.appendChild(newTable);
+<h1>📋 Графік нарядів у їдальню</h1>
+
+<div class="table-container">
+  <table id="dutyTable">
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>П.І.Б.</th>
+        <th>Пн</th>
+        <th>Вт</th>
+        <th>Ср</th>
+        <th>Чт</th>
+        <th>Пт</th>
+        <th>Сб</th>
+        <th>Нд</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- JS додає рядки -->
+    </tbody>
+  </table>
+</div>
+
+<div class="controls">
+  <button class="button-danger" onclick="clearTable()">Очистити</button>
+  <button onclick="downloadPDF()">Завантажити PDF</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script>
+  const names = [
+    "ГОЛУБОВ Я.К.", "ДМИТРЕНКО Є.С.", "КАТРАН С.М.",
+    "ДАДЮН О.", "СЄРНИЙ Д.", "ШОПКОВЕНКО Ю.", "ГУРЖИЯН М."
+  ];
+
+  const table = document.querySelector("#dutyTable tbody");
+
+  function createTable() {
+    table.innerHTML = "";
+    for (let i = 0; i < names.length; i++) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${i + 1}</td><td contenteditable="true" class="editable">${names[i]}</td>`;
+      for (let j = 0; j < 7; j++) {
+        const cell = document.createElement("td");
+        cell.addEventListener("click", () => toggleCell(cell));
+        row.appendChild(cell);
+      }
+      table.appendChild(row);
     }
+    loadFromStorage();
+  }
 
-    function clearTables() {
-      document.getElementById('tablesContainer').innerHTML = '';
+  function toggleCell(cell) {
+    cell.classList.toggle("active");
+    saveToStorage();
+  }
+
+  function saveToStorage() {
+    const data = [];
+    for (let row of table.rows) {
+      const name = row.cells[1].innerText;
+      const days = [];
+      for (let i = 2; i < 9; i++) {
+        days.push(row.cells[i].classList.contains("active"));
+      }
+      data.push({ name, days });
     }
+    localStorage.setItem("dutySchedule", JSON.stringify(data));
+  }
 
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'pt', 'a4');
-
-      html2canvas(document.getElementById('tablesContainer')).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const imgWidth = pageWidth - 40;
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        doc.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
-        doc.save('rozklad.pdf');
-      });
+  function loadFromStorage() {
+    const data = JSON.parse(localStorage.getItem("dutySchedule"));
+    if (!data) return;
+    for (let i = 0; i < data.length; i++) {
+      if (!table.rows[i]) continue;
+      table.rows[i].cells[1].innerText = data[i].name;
+      for (let j = 0; j < 7; j++) {
+        if (data[i].days[j]) {
+          table.rows[i].cells[j + 2].classList.add("active");
+        } else {
+          table.rows[i].cells[j + 2].classList.remove("active");
+        }
+      }
     }
+  }
 
-    // Створити першу таблицю за замовчуванням
-    window.onload = () => addTable();
-  </script></body></html>
+  function clearTable() {
+    localStorage.removeItem("dutySchedule");
+    createTable();
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Графік нарядів у їдальню", 20, 20);
+    const rows = [];
+    for (let row of table.rows) {
+      const r = [row.cells[0].innerText, row.cells[1].innerText];
+      for (let i = 2; i < 9; i++) {
+        r.push(row.cells[i].classList.contains("active") ? "■" : "");
+      }
+      rows.push(r);
+    }
+    doc.autoTable({
+      head: [["№", "П.І.Б.", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]],
+      body: rows,
+      startY: 30,
+      styles: { halign: "center" }
+    });
+    doc.save("Графік_нарядів.pdf");
+  }
+
+  createTable();
+  table.addEventListener("input", saveToStorage);
+</script>
+
+</body>
+</html>
