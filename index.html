@@ -1,4 +1,4 @@
-<html>
+html
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -149,43 +149,44 @@
 </div>
 
 <div class="controls">
-  <button class="button-danger" onclick="clearTable()">Очистити</button>
+  <button class="button-danger" onclick="clearAllTables()">Очистити все</button>
   <button onclick="downloadPDF()">Завантажити PDF</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script>
+  // Дані для першої таблиці (графік нарядів)
   const names = [
     "ГОЛУБОВ Я.К.", "ДМИТРЕНКО Є.С.", "КАТРАН С.М.",
     "ДАДЮН О.", "СЄРНИЙ Д.", "ШОПКОВЕНКО Ю.", "ГУРЖИЯН М."
   ];
 
-  const table = document.querySelector("#dutyTable tbody");
+  const dutyTableBody = document.querySelector("#dutyTable tbody");
 
-  function createTable() {
-    table.innerHTML = "";
+  function createDutyTable() {
+    dutyTableBody.innerHTML = "";
     for (let i = 0; i < names.length; i++) {
       const row = document.createElement("tr");
       row.innerHTML = `<td>${i + 1}</td><td contenteditable="true" class="editable">${names[i]}</td>`;
       for (let j = 0; j < 7; j++) {
         const cell = document.createElement("td");
-        cell.addEventListener("click", () => toggleCell(cell));
+        cell.addEventListener("click", () => toggleDutyCell(cell));
         row.appendChild(cell);
       }
-      table.appendChild(row);
+      dutyTableBody.appendChild(row);
     }
-    loadFromStorage();
+    loadDutyScheduleFromStorage();
   }
 
-  function toggleCell(cell) {
+  function toggleDutyCell(cell) {
     cell.classList.toggle("active");
-    saveToStorage();
+    saveDutyScheduleToStorage();
   }
 
-  function saveToStorage() {
+  function saveDutyScheduleToStorage() {
     const data = [];
-    for (let row of table.rows) {
+    for (let row of dutyTableBody.rows) {
       const name = row.cells[1].innerText;
       const days = [];
       for (let i = 2; i < 9; i++) {
@@ -196,96 +197,126 @@
     localStorage.setItem("dutySchedule", JSON.stringify(data));
   }
 
-  function loadFromStorage() {
+  function loadDutyScheduleFromStorage() {
     const data = JSON.parse(localStorage.getItem("dutySchedule"));
     if (!data) return;
     for (let i = 0; i < data.length; i++) {
-      if (!table.rows[i]) continue;
-      table.rows[i].cells[1].innerText = data[i].name;
+      if (!dutyTableBody.rows[i]) continue;
+      dutyTableBody.rows[i].cells[1].innerText = data[i].name;
       for (let j = 0; j < 7; j++) {
         if (data[i].days[j]) {
-          table.rows[i].cells[j + 2].classList.add("active");
+          dutyTableBody.rows[i].cells[j + 2].classList.add("active");
         } else {
-          table.rows[i].cells[j + 2].classList.remove("active");
+          dutyTableBody.rows[i].cells[j + 2].classList.remove("active");
         }
       }
     }
   }
 
-  function clearTable() {
-    localStorage.removeItem("dutySchedule");
-    createTable();
-  }
-
-  async function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("Графік нарядів у їдальню", 20, 20);
-    const rows = [];
-    for (let row of table.rows) {
-      const r = [row.cells[0].innerText, row.cells[1].innerText];
-      for (let i = 2; i < 9; i++) {
-        r.push(row.cells[i].classList.contains("active") ? "■" : "");
-      }
-      rows.push(r);
-    }
-    doc.autoTable({
-      head: [["№", "П.І.Б.", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]],
-      body: rows,
-      startY: 30,
-      styles: { halign: "center" }
-    });
-    doc.save("Графік_нарядів.pdf");
-  }
-
-  createTable();
-  table.addEventListener("input", saveToStorage);
-
-  // Новий код для таблиці вахти 7*3
-  const shiftsToday = {
-    "09:00-12:00": "Дан",
-    "12:00-15:00": "Гуриханян",
-    "15:00-18:00": "Ярик",
-    "18:00-21:00": "Денис/Женя",
-    "21:00-00:00": "Дан",
-    "00:00-03:00": "Гуриханян",
-    "03:00-06:00": "Ярик",
-    "06:00-09:00": "Денис/Женя"
-  };
-
-  const shiftsAfterTomorrow = {
-    "09:00-12:00": "Дан",
-    "12:00-15:00": "Гуриханян",
-    "15:00-18:00": "Юра",
-    "18:00-21:00": "Денис",
-    "21:00-00:00": "Дан",
-    "00:00-03:00": "Гуриханян",
-    "03:00-06:00": "Юра",
-    "06:00-09:00": "Денис"
-  };
-
-  const timeSlots = [
-    "09:00-12:00", "12:00-15:00", "15:00-18:00", "18:00-21:00",
-    "21:00-00:00", "00:00-03:00", "03:00-06:00", "06:00-09:00"
+  // Дані для другої таблиці (вахта 7*3)
+  const initialShifts = [
+    { time: "09:00-12:00", today: "Дан", afterTomorrow: "Дан" },
+    { time: "12:00-15:00", today: "Гуриханян", afterTomorrow: "Гуриханян" },
+    { time: "15:00-18:00", today: "Ярик", afterTomorrow: "Юра" },
+    { time: "18:00-21:00", today: "Денис/Женя", afterTomorrow: "Денис" },
+    { time: "21:00-00:00", today: "Дан", afterTomorrow: "Дан" },
+    { time: "00:00-03:00", today: "Гуриханян", afterTomorrow: "Гуриханян" },
+    { time: "03:00-06:00", today: "Ярик", afterTomorrow: "Юра" },
+    { time: "06:00-09:00", today: "Денис/Женя", afterTomorrow: "Денис" }
   ];
 
   const shift7x3TableBody = document.querySelector("#shift7x3Table tbody");
 
   function create7x3ShiftTable() {
-    shift7x3TableBody.innerHTML = ""; // Очищаємо існуючі рядки перед додаванням нових
-    timeSlots.forEach(slot => {
+    shift7x3TableBody.innerHTML = "";
+    let currentShifts = load7x3ShiftsFromStorage(); // Спробуємо завантажити збережені дані
+    if (!currentShifts || currentShifts.length === 0) { // Якщо немає збережених, використовуємо початкові
+      currentShifts = initialShifts;
+    }
+
+    currentShifts.forEach(shift => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${slot}</td>
-        <td>${shiftsToday[slot] || ''}</td>
-        <td>${shiftsAfterTomorrow[slot] || ''}</td>
+        <td>${shift.time}</td>
+        <td contenteditable="true" class="editable">${shift.today}</td>
+        <td contenteditable="true" class="editable">${shift.afterTomorrow}</td>
       `;
       shift7x3TableBody.appendChild(row);
     });
   }
 
-  // Викликаємо функцію для створення нової таблиці
+  function save7x3ShiftsToStorage() {
+    const data = [];
+    for (let row of shift7x3TableBody.rows) {
+      const time = row.cells[0].innerText;
+      const today = row.cells[1].innerText;
+      const afterTomorrow = row.cells[2].innerText;
+      data.push({ time, today, afterTomorrow });
+    }
+    localStorage.setItem("shift7x3Schedule", JSON.stringify(data));
+  }
+
+  function load7x3ShiftsFromStorage() {
+    const data = JSON.parse(localStorage.getItem("shift7x3Schedule"));
+    return data;
+  }
+
+  // Функція для очищення обох таблиць
+  function clearAllTables() {
+    localStorage.removeItem("dutySchedule");
+    localStorage.removeItem("shift7x3Schedule");
+    createDutyTable();
+    create7x3ShiftTable();
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Додаємо першу таблицю (Графік нарядів)
+    doc.text("Графік нарядів у їдальню", 20, 20);
+    const dutyRows = [];
+    for (let row of dutyTableBody.rows) {
+      const r = [row.cells[0].innerText, row.cells[1].innerText];
+      for (let i = 2; i < 9; i++) {
+        r.push(row.cells[i].classList.contains("active") ? "■" : "");
+      }
+      dutyRows.push(r);
+    }
+    doc.autoTable({
+      head: [["№", "П.І.Б.", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]],
+      body: dutyRows,
+      startY: 30,
+      styles: { halign: "center" }
+    });
+
+    // Додаємо другу таблицю (Вахта 7*3)
+    doc.addPage(); // Додаємо нову сторінку для другої таблиці
+    doc.text("Вахта 7*3 (Зміни)", 20, 20);
+    const shift7x3Rows = [];
+    for (let row of shift7x3TableBody.rows) {
+      const time = row.cells[0].innerText;
+      const today = row.cells[1].innerText;
+      const afterTomorrow = row.cells[2].innerText;
+      shift7x3Rows.push([time, today, afterTomorrow]);
+    }
+    doc.autoTable({
+      head: [["Час", "Сьогодні", "Післязавтра"]],
+      body: shift7x3Rows,
+      startY: 30,
+      styles: { halign: "center" }
+    });
+
+    doc.save("Графік_нарядів_та_вахти.pdf");
+  }
+
+  // Ініціалізація таблиць при завантаженні сторінки
+  createDutyTable();
   create7x3ShiftTable();
+
+  // Додаємо слухачі подій для збереження змін
+  dutyTableBody.addEventListener("input", saveDutyScheduleToStorage);
+  shift7x3TableBody.addEventListener("input", save7x3ShiftsToStorage);
 </script>
 
 </body>
