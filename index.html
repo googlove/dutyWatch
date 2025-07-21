@@ -1,323 +1,171 @@
-<html>
-<!DOCTYPE html>
-<html lang="uk">
+<!DOCTYPE html><html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Графік нарядів</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>График Дежурств</title>
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1b2a;
+      color: #e0e1dd;
       margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
-      color: #333;
+      padding: 2rem;
     }
-
     h1 {
       text-align: center;
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      color: #00b4d8;
     }
-
-    .table-container {
-      overflow-x: auto;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 30px; /* Додав відступ між таблицями */
+    .day {
+      background: #1b263b;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
     }
-
-    table {
-      width: 100%;
-      min-width: 600px;
-      border-collapse: collapse;
+    .day h2 {
+      color: #90e0ef;
+      margin-top: 0;
     }
-
-    th, td {
-      border: 1px solid #ccc;
-      text-align: center;
-      padding: 10px;
-      font-size: 0.95rem;
+    .shift {
+      margin-bottom: 0.5rem;
+      padding-left: 1rem;
     }
-
-    th {
-      background: #2c3e50;
-      color: white;
+    select, input[type="text"] {
+      background: #1b263b;
+      color: #e0e1dd;
+      border: 1px solid #00b4d8;
+      border-radius: 6px;
+      padding: 0.4rem;
+      margin-right: 0.5rem;
     }
-
-    .active {
-      background-color: black;
-      color: black;
-    }
-
-    td.editable {
-      background: #f1f1f1;
-    }
-
-    td.editable:focus {
-      outline: 2px solid #3498db;
-    }
-
     button {
-      padding: 12px 20px;
-      margin: 10px 5px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background: #3498db;
+      background: #0077b6;
       color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
       cursor: pointer;
-      transition: 0.2s ease;
     }
-
     button:hover {
-      background: #2980b9;
-    }
-
-    .button-danger {
-      background: #e74c3c;
-    }
-
-    .button-danger:hover {
-      background: #c0392b;
-    }
-
-    .controls {
-      text-align: center;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 600px) {
-      th, td {
-        font-size: 0.8rem;
-        padding: 8px;
-      }
-
-      button {
-        font-size: 0.9rem;
-        padding: 10px 15px;
-      }
-
-      h1 {
-        font-size: 1.2rem;
-      }
+      background: #023e8a;
     }
   </style>
 </head>
 <body>
+  <h1>График Дежурств</h1>
+  <div id="schedule"></div>  <div style="margin-top: 2rem">
+    <h2>Добавить смену</h2>
+    <select id="daySelect"></select>
+    <input type="text" id="personInput" placeholder="Имя" />
+    <input type="text" id="timeInput" placeholder="Часы (например, 09:00-12:00)" />
+    <button onclick="addShift()">Добавить</button>
+  </div>  <script>
+    const shifts = {
+      'Завтра': [
+        'Юра 09:00-12:00, 21:00-00:00',
+        'Женя 12:00-15:00, 00:00-03:00',
+        'Гуриханян 15:00-18:00, 03:00-06:00',
+        'Ярик 18:00-21:00, 06:00-09:00',
+        'Дан столовая'
+      ],
+      'Среда': [
+        'Денис 09:00-12:00, 21:00-00:00',
+        'Юра 12:00-15:00, 00:00-03:00',
+        'Катран 15:00-18:00, 03:00-06:00',
+        'Ярик 18:00-21:00, 06:00-09:00',
+        'Гуриханян столовая'
+      ],
+      'Четверг': [
+        'Денис 09:00-12:00, 21:00-00:00',
+        'Юра 12:00-15:00, 00:00-03:00',
+        'Гуриханян 15:00-18:00, 03:00-06:00',
+        'Ярик 18:00-21:00, 06:00-09:00',
+        'Катран столовая'
+      ],
+      'Пятница': [
+        'Денис 09:00-12:00, 21:00-00:00',
+        'Юра 12:00-15:00, 00:00-03:00',
+        'Катран 15:00-18:00, 03:00-06:00',
+        'Гуриханян 18:00-21:00, 06:00-09:00',
+        'Ярик столовая'
+      ],
+      'Суббота': [
+        'Денис 09:00-12:00, 21:00-00:00',
+        'Катран 12:00-15:00, 00:00-03:00',
+        'Женя 15:00-18:00, 03:00-06:00',
+        'Ярик 18:00-21:00, 06:00-09:00',
+        'Гуриханян столовая',
+        'Дан на готовку - уезжает зинар'
+      ],
+      'Воскресенье': [
+        'Денис 09:00-12:00, 21:00-00:00',
+        'Катран 12:00-15:00, 00:00-03:00',
+        'Гуриханян 15:00-18:00, 03:00-06:00',
+        'Ярик 18:00-21:00, 06:00-09:00',
+        'Женя столовая'
+      ],
+      'Понедельник': [
+        'Денис 09:00-12:00, 21:00-00:00',
+        'Женя 12:00-15:00, 00:00-03:00',
+        'Катран 15:00-18:00, 03:00-06:00',
+        'Гуриханян 18:00-21:00, 06:00-09:00',
+        'Ярик столовая'
+      ],
+      'Вторник': [
+        'Ярик 09:00-12:00, 21:00-00:00',
+        'Женя 12:00-15:00, 00:00-03:00',
+        'Дан 15:00-18:00, 03:00-06:00',
+        'Юра 18:00-21:00, 06:00-09:00',
+        'Гуриханян выходной',
+        'Катран столовая'
+      ]
+    };
 
-<h1>📋 Графік нарядів на камбуз</h1>
+    const scheduleContainer = document.getElementById('schedule');
+    const daySelect = document.getElementById('daySelect');
 
-<div class="table-container">
-  <table id="dutyTable">
-    <thead>
-      <tr>
-        <th>№</th>
-        <th>П.І.Б.</th>
-        <th>Пн</th>
-        <th>Вт</th>
-        <th>Ср</th>
-        <th>Чт</th>
-        <th>Пт</th>
-        <th>Сб</th>
-        <th>Нд</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- JS додає рядки -->
-    </tbody>
-  </table>
-</div>
+    function renderSchedule() {
+      scheduleContainer.innerHTML = '';
+      daySelect.innerHTML = '';
 
-<!-- Нова таблиця для вахти 7*3 -->
-<h1>🗓️ Вахта(Зміни)</h1>
-<div class="table-container">
-  <table id="shift7x3Table">
-    <thead>
-      <tr>
-        <th>Час</th>
-        <th>Сьогодні</th>
-        <th>Післязавтра</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- JS додає рядки -->
-    </tbody>
-  </table>
-</div>
+      Object.entries(shifts).forEach(([day, shiftList]) => {
+        const section = document.createElement('div');
+        section.className = 'day';
 
-<div class="controls">
-  <button class="button-danger" onclick="clearAllTables()">Очистити все</button>
-  <button onclick="downloadPDF()">Завантажити PDF</button>
-</div>
+        const h2 = document.createElement('h2');
+        h2.textContent = day;
+        section.appendChild(h2);
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<script>
-  // Дані для першої таблиці (графік нарядів)
-  const names = [
-    "ГОГУЛОВ Я.", "ДМИТРІЄНКО Є.", "КАТРАН М.",
-    "ДАН О.", "МЄРНИЙ Д.", "ШОЛКОВЕНКО Ю.", "ГУРІХАНЯН М."
-  ];
+        shiftList.forEach(shift => {
+          const div = document.createElement('div');
+          div.className = 'shift';
+          div.textContent = '• ' + shift;
+          section.appendChild(div);
+        });
 
-  const dutyTableBody = document.querySelector("#dutyTable tbody");
+        scheduleContainer.appendChild(section);
 
-  function createDutyTable() {
-    dutyTableBody.innerHTML = "";
-    for (let i = 0; i < names.length; i++) {
-      const row = document.createElement("tr");
-      row.innerHTML = `<td>${i + 1}</td><td contenteditable="true" class="editable">${names[i]}</td>`;
-      for (let j = 0; j < 7; j++) {
-        const cell = document.createElement("td");
-        cell.addEventListener("click", () => toggleDutyCell(cell));
-        row.appendChild(cell);
-      }
-      dutyTableBody.appendChild(row);
-    }
-    loadDutyScheduleFromStorage();
-  }
-
-  function toggleDutyCell(cell) {
-    cell.classList.toggle("active");
-    saveDutyScheduleToStorage();
-  }
-
-  function saveDutyScheduleToStorage() {
-    const data = [];
-    for (let row of dutyTableBody.rows) {
-      const name = row.cells[1].innerText;
-      const days = [];
-      for (let i = 2; i < 9; i++) {
-        days.push(row.cells[i].classList.contains("active"));
-      }
-      data.push({ name, days });
-    }
-    localStorage.setItem("dutySchedule", JSON.stringify(data));
-  }
-
-  function loadDutyScheduleFromStorage() {
-    const data = JSON.parse(localStorage.getItem("dutySchedule"));
-    if (!data) return;
-    for (let i = 0; i < data.length; i++) {
-      if (!dutyTableBody.rows[i]) continue;
-      dutyTableBody.rows[i].cells[1].innerText = data[i].name;
-      for (let j = 0; j < 7; j++) {
-        if (data[i].days[j]) {
-          dutyTableBody.rows[i].cells[j + 2].classList.add("active");
-        } else {
-          dutyTableBody.rows[i].cells[j + 2].classList.remove("active");
-        }
-      }
-    }
-  }
-
-  // Дані для другої таблиці (вахта 7*3)
-  const initialShifts = [
-    { time: "09:00-12:00", today: "Дан", afterTomorrow: "Дан" },
-    { time: "12:00-15:00", today: "Гуриханян", afterTomorrow: "Гуриханян" },
-    { time: "15:00-18:00", today: "Ярик", afterTomorrow: "Юра" },
-    { time: "18:00-21:00", today: "Денис/Женя", afterTomorrow: "Денис" },
-    { time: "21:00-00:00", today: "Дан", afterTomorrow: "Дан" },
-    { time: "00:00-03:00", today: "Гуриханян", afterTomorrow: "Гуриханян" },
-    { time: "03:00-06:00", today: "Ярик", afterTomorrow: "Юра" },
-    { time: "06:00-09:00", today: "Денис/Женя", afterTomorrow: "Денис" }
-  ];
-
-  const shift7x3TableBody = document.querySelector("#shift7x3Table tbody");
-
-  function create7x3ShiftTable() {
-    shift7x3TableBody.innerHTML = "";
-    let currentShifts = load7x3ShiftsFromStorage(); // Спробуємо завантажити збережені дані
-    if (!currentShifts || currentShifts.length === 0) { // Якщо немає збережених, використовуємо початкові
-      currentShifts = initialShifts;
+        const option = document.createElement('option');
+        option.value = day;
+        option.textContent = day;
+        daySelect.appendChild(option);
+      });
     }
 
-    currentShifts.forEach(shift => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${shift.time}</td>
-        <td contenteditable="true" class="editable">${shift.today}</td>
-        <td contenteditable="true" class="editable">${shift.afterTomorrow}</td>
-      `;
-      shift7x3TableBody.appendChild(row);
-    });
-  }
+    function addShift() {
+      const day = document.getElementById('daySelect').value;
+      const name = document.getElementById('personInput').value.trim();
+      const time = document.getElementById('timeInput').value.trim();
 
-  function save7x3ShiftsToStorage() {
-    const data = [];
-    for (let row of shift7x3TableBody.rows) {
-      const time = row.cells[0].innerText;
-      const today = row.cells[1].innerText;
-      const afterTomorrow = row.cells[2].innerText;
-      data.push({ time, today, afterTomorrow });
+      if (!name || !time) return;
+      const entry = `${name} ${time}`;
+      shifts[day].push(entry);
+
+      document.getElementById('personInput').value = '';
+      document.getElementById('timeInput').value = '';
+      renderSchedule();
     }
-    localStorage.setItem("shift7x3Schedule", JSON.stringify(data));
-  }
 
-  function load7x3ShiftsFromStorage() {
-    const data = JSON.parse(localStorage.getItem("shift7x3Schedule"));
-    return data;
-  }
-
-  // Функція для очищення обох таблиць
-  function clearAllTables() {
-    localStorage.removeItem("dutySchedule");
-    localStorage.removeItem("shift7x3Schedule");
-    createDutyTable();
-    create7x3ShiftTable();
-  }
-
-  async function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    // Додаємо першу таблицю (Графік нарядів)
-    doc.text("Графік нарядів у їдальню", 20, 20);
-    const dutyRows = [];
-    for (let row of dutyTableBody.rows) {
-      const r = [row.cells[0].innerText, row.cells[1].innerText];
-      for (let i = 2; i < 9; i++) {
-        r.push(row.cells[i].classList.contains("active") ? "■" : "");
-      }
-      dutyRows.push(r);
-    }
-    doc.autoTable({
-      head: [["№", "П.І.Б.", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]],
-      body: dutyRows,
-      startY: 30,
-      styles: { halign: "center" }
-    });
-
-    // Додаємо другу таблицю (Вахта 7*3)
-    doc.addPage(); // Додаємо нову сторінку для другої таблиці
-    doc.text("Вахта 7*3 (Зміни)", 20, 20);
-    const shift7x3Rows = [];
-    for (let row of shift7x3TableBody.rows) {
-      const time = row.cells[0].innerText;
-      const today = row.cells[1].innerText;
-      const afterTomorrow = row.cells[2].innerText;
-      shift7x3Rows.push([time, today, afterTomorrow]);
-    }
-    doc.autoTable({
-      head: [["Час", "Сьогодні", "Післязавтра"]],
-      body: shift7x3Rows,
-      startY: 30,
-      styles: { halign: "center" }
-    });
-
-    doc.save("Графік_нарядів_та_вахти.pdf");
-  }
-
-  // Ініціалізація таблиць при завантаженні сторінки
-  createDutyTable();
-  create7x3ShiftTable();
-
-  // Додаємо слухачі подій для збереження змін
-  dutyTableBody.addEventListener("input", saveDutyScheduleToStorage);
-  shift7x3TableBody.addEventListener("input", save7x3ShiftsToStorage);
-</script>
-
-</body>
+    renderSchedule();
+  </script></body>
 </html>
