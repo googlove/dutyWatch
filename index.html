@@ -201,26 +201,52 @@
     return current >= start && current < end;
   }
 
-  function updateCurrentShift() {
-    const now = new Date();
-    const day = now.toLocaleDateString('en', { weekday: 'long' });
-    let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
-    (shifts[day] || []).forEach(person => {
-      let line = "";
-      if (person.shifts) {
-        const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
-        line += activeShift
-          ? `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`
-          : `${person.name}`;
-      } else if (person.status === "off") {
-        line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">${lang === 'en' ? 'Off' : 'Вихідний'}</span>`;
-      } else if (person.status === "canteen") {
-        line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
+ function updateCurrentShift() {
+  const now = new Date();
+  const day = now.toLocaleDateString('en', { weekday: 'long' });
+  let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
+  let nextWatch = null;
+  let nextWatchTime = null;
+
+  (shifts[day] || []).forEach(person => {
+    let line = "";
+    if (person.shifts) {
+      const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
+      line += activeShift
+        ? `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`
+        : `${person.name}`;
+
+      // знайти наступну зміну після поточного часу
+      for (let shift of person.shifts) {
+        const [startStr, endStr] = shift.split("-");
+        const [startH, startM] = startStr.split(":").map(Number);
+        const shiftStart = new Date(now);
+        shiftStart.setHours(startH, startM, 0, 0);
+        if (shiftStart > now && (!nextWatchTime || shiftStart < nextWatchTime)) {
+          nextWatch = person.name;
+          nextWatchTime = shiftStart;
+        }
       }
-      shiftHTML += `<div>${line}</div>`;
+
+    } else if (person.status === "off") {
+      line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">${lang === 'en' ? 'Off' : 'Вихідний'}</span>`;
+    } else if (person.status === "canteen") {
+      line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
+    }
+
+    shiftHTML += `<div>${line}</div>`;
+  });
+
+  if (nextWatch && nextWatchTime) {
+    const timeStr = nextWatchTime.toLocaleTimeString(lang === 'en' ? 'en-GB' : 'uk-UA', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
-    document.getElementById('currentShift').innerHTML = shiftHTML;
+    shiftHTML += `<div style="margin-top: 1rem;"><strong>➡️ ${langData[lang].onNext}:</strong> ${nextWatch} <small>(${timeStr})</small></div>`;
   }
+
+  document.getElementById('currentShift').innerHTML = shiftHTML;
+}
 
   function renderDailyEvents() {
     const eventsHTML = `
