@@ -72,6 +72,12 @@
       color: var(--text);
     }
 
+    #dateTime {
+    font-size: 1rem;
+    line-height: 1.5;
+   }
+
+
     button {
       background-color: var(--accent);
       border: none;
@@ -92,7 +98,7 @@
 
   <div class="card">
     <h1 data-i18n="watchCommand">Watch Command System</h1>
-    <div id="clock"></div>
+    <div id="dateTime" class="section"></div>
     <div id="currentShift" class="section"></div>
     <div id="weather" class="section"></div>
     <div id="airAlert" class="section"></div>
@@ -135,12 +141,29 @@
 
     document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
 
-    // Clock
-    setInterval(() => {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleTimeString();
-      updateCurrentShift(now);
-    }, 1000);
+    function updateDateTime() {
+  const now = new Date();
+
+  const daysUa = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
+  const daysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  const dayName = lang === 'en' ? daysEn[now.getDay()] : daysUa[now.getDay()];
+  const date = now.toLocaleDateString(lang === 'en' ? 'en-GB' : 'uk-UA');
+  const time = now.toLocaleTimeString(lang === 'en' ? 'en-GB' : 'uk-UA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  const html = `
+    <h3>🕒 ${lang === 'en' ? 'Current Time' : 'Поточний час'}</h3>
+    <div>📅 ${lang === 'en' ? 'Date' : 'Дата'}: ${date}</div>
+    <div>📆 ${lang === 'en' ? 'Day' : 'День'}: ${dayName}</div>
+    <div>⏰ ${lang === 'en' ? 'Time' : 'Час'}: ${time}</div>
+  `;
+
+  document.getElementById("dateTime").innerHTML = html;
+}
 
     const shifts = {
       "Tuesday": [
@@ -259,6 +282,8 @@ function renderDailyEvents() {
     loadWeather();
     renderDailyEvents();
     checkAirAlert();
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
     setInterval(loadWeather, 600000); // 10 хвилин
     setInterval(checkAirAlert, 300000); // 5 хвилин
 
