@@ -40,13 +40,7 @@
       right: 1rem;
       display: flex;
       gap: 0.5rem;
-    }
-
-    .flag {
-      width: 24px;
-      height: 16px;
-      cursor: pointer;
-      border: 1px solid #ccc;
+      align-items: center;
     }
 
     .online {
@@ -62,14 +56,31 @@
       display: inline-block;
       margin-right: 5px;
     }
+
+    select {
+      padding: 0.3rem;
+      border-radius: 5px;
+      border: 1px solid var(--accent);
+      background: var(--card);
+      color: var(--text);
+    }
+
+    button {
+      background-color: var(--accent);
+      border: none;
+      padding: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="controls">
     <button onclick="toggleTheme()">🌓</button>
-    <img src="https://flagcdn.com/w20/ua.png" class="flag" onclick="setLang('ua')">
-    <img src="https://flagcdn.com/w20/ru.png" class="flag" onclick="setLang('ru')">
-    <img src="https://flagcdn.com/w20/gb.png" class="flag" onclick="setLang('en')">
+    <select onchange="setLang(this.value)">
+      <option value="ua">Українська</option>
+      <option value="en">English</option>
+    </select>
   </div>
 
   <div class="card">
@@ -83,14 +94,15 @@
   <script>
     const langData = {
       en: { watchCommand: "Watch Command System", airAlert: "Air Alert", onWatch: "On watch now" },
-      ua: { watchCommand: "Вахтовий Командний Центр", airAlert: "Повітряна тривога", onWatch: "Зараз на вахті" },
-      ru: { watchCommand: "Вахтенный Командный Центр", airAlert: "Воздушная тревога", onWatch: "Сейчас на вахте" }
+      ua: { watchCommand: "Вахтовий Командний Центр", airAlert: "Повітряна тривога", onWatch: "Зараз на вахті" }
     };
 
     let lang = localStorage.getItem('lang') || 'ua';
+
     function setLang(l) {
       lang = l;
       localStorage.setItem('lang', lang);
+      document.querySelector("select").value = lang;
       translate();
     }
 
@@ -101,7 +113,10 @@
       });
     }
 
-    translate();
+    // Ініціалізація мови при завантаженні
+    document.addEventListener("DOMContentLoaded", () => {
+      setLang(lang);
+    });
 
     function toggleTheme() {
       const theme = document.documentElement.getAttribute('data-theme');
@@ -152,9 +167,7 @@
         return h * 60 + m;
       });
       const current = now.getHours() * 60 + now.getMinutes();
-      if (end < start) {
-        return current >= start || current < end; // crosses midnight
-      }
+      if (end < start) return current >= start || current < end; // crosses midnight
       return current >= start && current < end;
     }
 
@@ -180,7 +193,6 @@
 
     async function checkAirAlert() {
       try {
-        // Альтернативне API для повітряних тривог (без API ключа)
         const res = await fetch("https://alerts.com.ua/api/states");
         const data = await res.json();
         const odessaRegion = data.states.find(state => state.name === "Одеська");
@@ -192,7 +204,7 @@
             new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
           }
         } else {
-          alertEl.textContent = `✅ ${lang === 'en' ? 'All clear' : lang === 'ua' ? 'Все спокійно' : 'Все спокойно'}`;
+          alertEl.textContent = `✅ ${lang === 'en' ? 'All clear' : 'Все спокійно'}`;
           alertEl.style.color = "var(--accent)";
         }
       } catch (e) {
@@ -203,12 +215,11 @@
 
     async function loadWeather() {
       try {
-        // Альтернативне API для погоди (без API ключа)
         const res = await fetch("https://wttr.in/Odesa?format=j1");
         const data = await res.json();
         const current = data.current_condition[0];
         const weatherHTML = `
-          <h3>🌤 ${lang === 'en' ? 'Weather' : lang === 'ua' ? 'Погода' : 'Погода'}</h3>
+          <h3>🌤 ${lang === 'en' ? 'Weather' : 'Погода'}</h3>
           <div>🌡 ${lang === 'en' ? 'Temp' : 'Темп'}: ${current.temp_C}°C (${current.FeelsLikeC}°C)</div>
           <div>💨 ${lang === 'en' ? 'Wind' : 'Вітер'}: ${current.windspeedKmph} km/h (${current.winddir16Point})</div>
           <div>💧 ${lang === 'en' ? 'Humidity' : 'Вологість'}: ${current.humidity}%</div>
@@ -221,19 +232,15 @@
         document.getElementById("weather").innerHTML = weatherHTML;
       } catch (e) {
         console.error("Weather error:", e);
-        document.getElementById("weather").textContent = `⚠️ ${lang === 'en' ? 'Weather unavailable' : lang === 'ua' ? 'Погода недоступна' : 'Погода недоступна'}`;
+        document.getElementById("weather").textContent = `⚠️ ${lang === 'en' ? 'Weather unavailable' : 'Погода недоступна'}`;
       }
     }
 
-    // Запускаємо оновлення даних при завантаженні
     loadWeather();
     checkAirAlert();
-    
-    // Оновлюємо дані кожні 10 хвилин
-    setInterval(loadWeather, 600000);
-    setInterval(checkAirAlert, 300000);
-    
-    // Запитуємо дозвіл на сповіщення
+    setInterval(loadWeather, 600000); // 10 хвилин
+    setInterval(checkAirAlert, 300000); // 5 хвилин
+
     if (Notification.permission !== "denied") {
       Notification.requestPermission();
     }
