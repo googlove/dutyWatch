@@ -89,6 +89,7 @@
     <div id="currentShift"></div>
     <div id="weather"></div>
     <div id="airAlert"></div>
+    <div id="events"></div>
   </div>
 
   <script>
@@ -191,6 +192,18 @@
       document.getElementById('currentShift').innerHTML = shiftHTML;
     }
 
+function renderDailyEvents() {
+  const eventsHTML = `
+    <h3>📅 ${lang === 'en' ? 'Daily Events' : 'Щоденні події'}</h3>
+    <ul style="list-style: none; padding-left: 0;">
+      <li>🚩 ${lang === 'en' ? 'Flotilla Flag Raising' : 'Підняття прапора Флотилії'} – 08:00</li>
+      <li>🧹 ${lang === 'en' ? 'Small Cleaning' : 'Мале прибирання'} – 08:30</li>
+      <li>🕯 ${lang === 'en' ? 'Morning Formation & Fallen Remembrance' : 'Малий збір та вшанування полеглих'} – 09:00</li>
+    </ul>`;
+  document.getElementById("events").innerHTML = eventsHTML;
+}
+
+
     async function checkAirAlert() {
       try {
         const res = await fetch("https://alerts.com.ua/api/states");
@@ -237,6 +250,7 @@
     }
 
     loadWeather();
+    renderDailyEvents();
     checkAirAlert();
     setInterval(loadWeather, 600000); // 10 хвилин
     setInterval(checkAirAlert, 300000); // 5 хвилин
