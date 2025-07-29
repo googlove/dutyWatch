@@ -159,38 +159,43 @@
     }
 
     function updateCurrentShift(now) {
-      const day = now.toLocaleDateString('en', { weekday: 'long' });
-      let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
-      (shifts[day] || []).forEach(person => {
-        let onDuty = false;
-        if (person.shifts) {
-          onDuty = person.shifts.some(shift => isNowInRange(shift, now));
-        }
-        shiftHTML += `<div>${onDuty ? '<span class="dot"></span>' : ''}${person.name}${onDuty ? ' <span class="online">' + langData[lang].onWatch + '</span>' : ''}</div>`;
-      });
-      document.getElementById('currentShift').innerHTML = shiftHTML;
+  const day = now.toLocaleDateString('en', { weekday: 'long' });
+  let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
+  (shifts[day] || []).forEach(person => {
+    let line = "";
+    if (person.shifts) {
+      const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
+      line += activeShift
+        ? `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`
+        : `${person.name}`;
+    } else if (person.status === "off") {
+      line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">вихідний</span>`;
+    } else if (person.status === "canteen") {
+      line += `🍴 ${person.name} <span style="color:orange">столова</span>`;
     }
+    shiftHTML += `<div>${line}</div>`;
+  });
+  document.getElementById('currentShift').innerHTML = shiftHTML;
+}
 
-    // Air Alert
-    async function checkAirAlert() {
-      try {
-        const res = await fetch("https://api.alerts.in.ua/v1/alerts/odessa-oblast");
-        const data = await res.json();
-        const active = data.some(alert => alert.active);
-        const alertEl = document.getElementById("airAlert");
-        alertEl.textContent = active ? `🚨 ${langData[lang].airAlert}` : `✅ ${langData[lang].airAlert}`;
-        if (Notification.permission === "granted" && active) {
-          new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
-        }
-      } catch (e) {
-        document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} unavailable`;
-      }
+async function checkAirAlert() {
+  try {
+    const res = await fetch("https://api.alerts.in.ua/v1/alerts/odessa-oblast");
+    const data = await res.json();
+    const active = data.some(alert => alert.active);
+    const alertEl = document.getElementById("airAlert");
+    if (active) {
+      alertEl.textContent = `🚨 ${langData[lang].airAlert}`;
+    } else {
+      alertEl.textContent = `✅ Все спокійно`;
     }
-
-    if (Notification.permission !== "granted") Notification.requestPermission();
-    setInterval(checkAirAlert, 60000);
-    checkAirAlert();
-
+    if (Notification.permission === "granted" && active) {
+      new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
+    }
+  } catch (e) {
+    document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} недоступна`;
+  }
+}
     // Open-Meteo
     async function loadWeather() {
       try {
@@ -198,19 +203,16 @@
         const data = await res.json();
         const w = data.current;
         const weatherHTML = `
-          <h3>🌤 Weather</h3>
-          <div>🌡 Temp: ${w.temperature_2m}°C</div>
-          <div>💨 Wind: ${w.wind_speed_10m} m/s</div>
-          <div>💧 Humidity: ${w.relative_humidity_2m}%</div>
-          <div>🔵 Pressure: ${w.pressure_msl} hPa</div>
-          <div>🌅 Sunrise: ${data.daily.sunrise?.[0] || "-"}</div>
-          <div>🌇 Sunset: ${data.daily.sunset?.[0] || "-"}</div>
-        `;
-        document.getElementById("weather").innerHTML = weatherHTML;
-      } catch (e) {
-        document.getElementById("weather").textContent = "⚠️ Weather unavailable";
-      }
-    }
+  <h3>🌤 Weather</h3>
+  <div>🌡 Temp: ${w.temperature_2m}°C</div>
+  <div>💨 Wind: ${w.wind_speed_10m} m/s</div>
+  <div>💧 Humidity: ${w.relative_humidity_2m}%</div>
+  <div>🔵 Pressure: ${w.pressure_msl} hPa</div>
+  <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--accent);">
+    🌅 <strong>Sunrise:</strong> ${data.daily.sunrise?.[0] || "-"}<br>
+    🌇 <strong>Sunset:</strong> ${data.daily.sunset?.[0] || "-"}
+  </div>
+`;
 
     loadWeather();
   </script>
