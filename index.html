@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,57 +10,58 @@
       --text: #ffffff;
       --card: #12183d;
       --accent: #00ff88;
-    }[data-theme="light"] {
-  --background: #ffffff;
-  --text: #000000;
-  --card: #f0f0f0;
-  --accent: #007acc;
-}
+    }
 
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background-color: var(--background);
-  color: var(--text);
-  transition: all 0.3s ease;
-}
+    [data-theme="light"] {
+      --background: #ffffff;
+      --text: #000000;
+      --card: #f0f0f0;
+      --accent: #007acc;
+    }
 
-.card {
-  background-color: var(--card);
-  padding: 1rem;
-  border-radius: 10px;
-  margin: 1rem;
-}
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      transition: all 0.3s ease;
+    }
 
-.controls {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  gap: 0.5rem;
-}
+    .card {
+      background-color: var(--card);
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 1rem;
+    }
 
-.flag {
-  width: 24px;
-  height: 16px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-}
+    .controls {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
 
-.online {
-  color: var(--accent);
-  font-weight: bold;
-}
+    .flag {
+      width: 24px;
+      height: 16px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+    }
 
-.dot {
-  height: 10px;
-  width: 10px;
-  background-color: var(--accent);
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 5px;
-}
+    .online {
+      color: var(--accent);
+      font-weight: bold;
+    }
 
+    .dot {
+      height: 10px;
+      width: 10px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
   </style>
 </head>
 <body>
@@ -68,13 +70,17 @@ body {
     <img src="https://flagcdn.com/w20/ua.png" class="flag" onclick="setLang('ua')">
     <img src="https://flagcdn.com/w20/ru.png" class="flag" onclick="setLang('ru')">
     <img src="https://flagcdn.com/w20/gb.png" class="flag" onclick="setLang('en')">
-  </div>  <div class="card">
+  </div>
+
+  <div class="card">
     <h1 data-i18n="watchCommand">Watch Command System</h1>
     <div id="clock"></div>
     <div id="currentShift"></div>
     <div id="weather"></div>
     <div id="airAlert"></div>
-  </div>  <script>
+  </div>
+
+  <script>
     const langData = {
       en: { watchCommand: "Watch Command System", airAlert: "Air Alert", onWatch: "On watch now" },
       ua: { watchCommand: "Вахтовий Командний Центр", airAlert: "Повітряна тривога", onWatch: "Зараз на вахті" },
@@ -114,41 +120,52 @@ body {
     }, 1000);
 
     const shifts = {
-  "Tuesday": [
-    { name: "Yaryk", shifts: ["09:00-12:00", "21:00-00:00"] },
-    { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
-    { name: "Yura", shifts: ["18:00-21:00", "06:00-09:00"] },
-    { name: "Gurikhanyan", status: "off" },
-    { name: "Katran", status: "canteen" }
-  ],
-  "Wednesday": [
-    { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
-    { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
-    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
-    { name: "Yaryk", status: "off" },
-    { name: "Yura", status: "canteen" }
-  ],
-  "Thursday": [
-    { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
-    { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Yaryk", shifts: ["15:00-18:00", "03:00-06:00"] },
-    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
-    { name: "Zhenya", status: "off" },
-    { name: "Dan", status: "canteen" }
-  ]
-};
+      "Tuesday": [
+        { name: "Yaryk", shifts: ["09:00-12:00", "21:00-00:00"] },
+        { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
+        { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
+        { name: "Yura", shifts: ["18:00-21:00", "06:00-09:00"] },
+        { name: "Gurikhanyan", status: "off" },
+        { name: "Katran", status: "canteen" }
+      ],
+      "Wednesday": [
+        { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
+        { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
+        { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
+        { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
+        { name: "Yaryk", status: "off" },
+        { name: "Yura", status: "canteen" }
+      ],
+      "Thursday": [
+        { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
+        { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
+        { name: "Yaryk", shifts: ["15:00-18:00", "03:00-06:00"] },
+        { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
+        { name: "Zhenya", status: "off" },
+        { name: "Dan", status: "canteen" }
+      ]
+    };
+
+    function isNowInRange(rangeStr, now) {
+      const [start, end] = rangeStr.split('-').map(t => {
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      });
+      const current = now.getHours() * 60 + now.getMinutes();
+      if (end < start) {
+        return current >= start || current < end; // crosses midnight
+      }
+      return current >= start && current < end;
+    }
 
     function updateCurrentShift(now) {
       const day = now.toLocaleDateString('en', { weekday: 'long' });
-      const hour = now.getHours();
-      const min = now.getMinutes();
       let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
       (shifts[day] || []).forEach(person => {
-        const onDuty = person.hours.some(([start, end]) => {
-          return hour >= start && hour < end;
-        });
+        let onDuty = false;
+        if (person.shifts) {
+          onDuty = person.shifts.some(shift => isNowInRange(shift, now));
+        }
         shiftHTML += `<div>${onDuty ? '<span class="dot"></span>' : ''}${person.name}${onDuty ? ' <span class="online">' + langData[lang].onWatch + '</span>' : ''}</div>`;
       });
       document.getElementById('currentShift').innerHTML = shiftHTML;
@@ -169,27 +186,33 @@ body {
         document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} unavailable`;
       }
     }
+
     if (Notification.permission !== "granted") Notification.requestPermission();
     setInterval(checkAirAlert, 60000);
     checkAirAlert();
 
     // Open-Meteo
     async function loadWeather() {
-      const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=46.48&longitude=30.73&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl,sunrise,sunset");
-      const data = await res.json();
-      const w = data.current;
-      const weatherHTML = `
-        <h3>🌤 Weather</h3>
-        <div>🌡 Temp: ${w.temperature_2m}°C</div>
-        <div>💨 Wind: ${w.wind_speed_10m} m/s</div>
-        <div>💧 Humidity: ${w.relative_humidity_2m}%</div>
-        <div>🔵 Pressure: ${w.pressure_msl} hPa</div>
-        <div>🌅 Sunrise: ${data.daily.sunrise?.[0] || "-"}</div>
-        <div>🌇 Sunset: ${data.daily.sunset?.[0] || "-"}</div>
-      `;
-      document.getElementById("weather").innerHTML = weatherHTML;
+      try {
+        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=46.48&longitude=30.73&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl&daily=sunrise,sunset&timezone=auto");
+        const data = await res.json();
+        const w = data.current;
+        const weatherHTML = `
+          <h3>🌤 Weather</h3>
+          <div>🌡 Temp: ${w.temperature_2m}°C</div>
+          <div>💨 Wind: ${w.wind_speed_10m} m/s</div>
+          <div>💧 Humidity: ${w.relative_humidity_2m}%</div>
+          <div>🔵 Pressure: ${w.pressure_msl} hPa</div>
+          <div>🌅 Sunrise: ${data.daily.sunrise?.[0] || "-"}</div>
+          <div>🌇 Sunset: ${data.daily.sunset?.[0] || "-"}</div>
+        `;
+        document.getElementById("weather").innerHTML = weatherHTML;
+      } catch (e) {
+        document.getElementById("weather").textContent = "⚠️ Weather unavailable";
+      }
     }
 
     loadWeather();
-  </script></body>
+  </script>
+</body>
 </html>
