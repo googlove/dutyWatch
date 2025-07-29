@@ -284,6 +284,8 @@ function renderDailyEvents() {
     checkAirAlert();
     updateDateTime();
     setInterval(updateDateTime, 1000);
+    updateCurrentShift();
+    setInterval(updateCurrentShift, 60 * 100); //сек
     setInterval(loadWeather, 600000); // 10 хвилин
     setInterval(checkAirAlert, 300000); // 5 хвилин
 
