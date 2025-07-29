@@ -180,47 +180,63 @@
 
     async function checkAirAlert() {
       try {
-        const res = await fetch("https://api.alerts.in.ua/v1/alerts/odessa-oblast");
+        // Альтернативне API для повітряних тривог (без API ключа)
+        const res = await fetch("https://alerts.com.ua/api/states");
         const data = await res.json();
-        const active = data.some(alert => alert.active);
+        const odessaRegion = data.states.find(state => state.name === "Одеська");
         const alertEl = document.getElementById("airAlert");
-        if (active) {
+        if (odessaRegion && odessaRegion.alert) {
           alertEl.textContent = `🚨 ${langData[lang].airAlert}`;
+          alertEl.style.color = "red";
+          if (Notification.permission === "granted") {
+            new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
+          }
         } else {
-          alertEl.textContent = `✅ Все спокійно`;
-        }
-        if (Notification.permission === "granted" && active) {
-          new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
+          alertEl.textContent = `✅ ${lang === 'en' ? 'All clear' : lang === 'ua' ? 'Все спокійно' : 'Все спокойно'}`;
+          alertEl.style.color = "var(--accent)";
         }
       } catch (e) {
+        console.error("Air alert error:", e);
         document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} недоступна`;
       }
     }
 
     async function loadWeather() {
       try {
-        const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=46.48&longitude=30.73&current=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl&daily=sunrise,sunset&timezone=auto");
+        // Альтернативне API для погоди (без API ключа)
+        const res = await fetch("https://wttr.in/Odesa?format=j1");
         const data = await res.json();
-        const w = data.current;
+        const current = data.current_condition[0];
         const weatherHTML = `
-          <h3>🌤 Weather</h3>
-          <div>🌡 Temp: ${w.temperature_2m}°C</div>
-          <div>💨 Wind: ${w.wind_speed_10m} m/s</div>
-          <div>💧 Humidity: ${w.relative_humidity_2m}%</div>
-          <div>🔵 Pressure: ${w.pressure_msl} hPa</div>
+          <h3>🌤 ${lang === 'en' ? 'Weather' : lang === 'ua' ? 'Погода' : 'Погода'}</h3>
+          <div>🌡 ${lang === 'en' ? 'Temp' : 'Темп'}: ${current.temp_C}°C (${current.FeelsLikeC}°C)</div>
+          <div>💨 ${lang === 'en' ? 'Wind' : 'Вітер'}: ${current.windspeedKmph} km/h (${current.winddir16Point})</div>
+          <div>💧 ${lang === 'en' ? 'Humidity' : 'Вологість'}: ${current.humidity}%</div>
+          <div>🔵 ${lang === 'en' ? 'Pressure' : 'Тиск'}: ${current.pressure} hPa</div>
+          <div>🌫 ${lang === 'en' ? 'Visibility' : 'Видимість'}: ${current.visibility} km</div>
           <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--accent);">
-            🌅 <strong>Sunrise:</strong> ${data.daily.sunrise?.[0] || "-"}<br>
-            🌇 <strong>Sunset:</strong> ${data.daily.sunset?.[0] || "-"}
+            🌅 <strong>${lang === 'en' ? 'Sunrise' : 'Схід сонця'}:</strong> ${data.weather[0].astronomy[0].sunrise}<br>
+            🌇 <strong>${lang === 'en' ? 'Sunset' : 'Захід сонця'}:</strong> ${data.weather[0].astronomy[0].sunset}
           </div>`;
         document.getElementById("weather").innerHTML = weatherHTML;
       } catch (e) {
-        document.getElementById("weather").textContent = "⚠️ Weather unavailable";
+        console.error("Weather error:", e);
+        document.getElementById("weather").textContent = `⚠️ ${lang === 'en' ? 'Weather unavailable' : lang === 'ua' ? 'Погода недоступна' : 'Погода недоступна'}`;
       }
     }
 
+    // Запускаємо оновлення даних при завантаженні
     loadWeather();
     checkAirAlert();
-    Notification.requestPermission();
+    
+    // Оновлюємо дані кожні 10 хвилин
+    setInterval(loadWeather, 600000);
+    setInterval(checkAirAlert, 300000);
+    
+    // Запитуємо дозвіл на сповіщення
+    if (Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
   </script>
 </body>
 </html>
