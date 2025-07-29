@@ -105,193 +105,192 @@
     <div id="events" class="section"></div>
   </div>
 
-  <script>
-    const langData = {
-      en: { watchCommand: "Watch Command System", airAlert: "Air Alert", onWatch: "On watch now" },
-      ua: { watchCommand: "Вахтовий Командний Центр", airAlert: "Повітряна тривога", onWatch: "Зараз на вахті" }
-    };
+<script>
+  const langData = {
+    en: { watchCommand: "Watch Command System", airAlert: "Air Alert", onWatch: "On watch now" },
+    ua: { watchCommand: "Вахтовий Командний Центр", airAlert: "Повітряна тривога", onWatch: "Зараз на вахті" }
+  };
 
-    let lang = localStorage.getItem('lang') || 'ua';
+  let lang = localStorage.getItem('lang') || 'ua';
 
-    function setLang(l) {
-      lang = l;
-      localStorage.setItem('lang', lang);
-      document.querySelector("select").value = lang;
-      translate();
-    }
+  function setLang(l) {
+    lang = l;
+    localStorage.setItem('lang', lang);
+    document.querySelector("select").value = lang;
+    translate();
+  }
 
-    function translate() {
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        el.textContent = langData[lang][key];
-      });
-    }
-
-    // Ініціалізація мови при завантаженні
-    document.addEventListener("DOMContentLoaded", () => {
-      setLang(lang);
+  function translate() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      el.textContent = langData[lang][key];
     });
+  }
 
-    function toggleTheme() {
-      const theme = document.documentElement.getAttribute('data-theme');
-      const newTheme = theme === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-    }
-
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
-
-    function updateDateTime() {
-  const now = new Date();
-
-  const daysUa = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
-  const daysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-  const dayName = lang === 'en' ? daysEn[now.getDay()] : daysUa[now.getDay()];
-  const date = now.toLocaleDateString(lang === 'en' ? 'en-GB' : 'uk-UA');
-  const time = now.toLocaleTimeString(lang === 'en' ? 'en-GB' : 'uk-UA', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+  document.addEventListener("DOMContentLoaded", () => {
+    setLang(lang);
   });
 
-  const html = `
-    <h3>🕒 ${lang === 'en' ? 'Current Time' : 'Поточний час'}</h3>
-    <div>📅 ${lang === 'en' ? 'Date' : 'Дата'}: ${date}</div>
-    <div>📆 ${lang === 'en' ? 'Day' : 'День'}: ${dayName}</div>
-    <div>⏰ ${lang === 'en' ? 'Time' : 'Час'}: ${time}</div>
-  `;
+  function toggleTheme() {
+    const theme = document.documentElement.getAttribute('data-theme');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  }
 
-  document.getElementById("dateTime").innerHTML = html;
-}
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
 
-    const shifts = {
-      "Tuesday": [
-        { name: "Yarik", shifts: ["09:00-12:00", "21:00-00:00"] },
-        { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
-        { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
-        { name: "Yura", shifts: ["18:00-21:00", "06:00-09:00"] },
-        { name: "Gurikhanyan", status: "off" },
-        { name: "Katran", status: "canteen" }
-      ],
-      "Wednesday": [
-        { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
-        { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
-        { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
-        { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
-        { name: "Yarik", status: "off" },
-        { name: "Yura", status: "canteen" }
-      ],
-      "Thursday": [
-        { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
-        { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-        { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"] },
-        { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
-        { name: "Zhenya", status: "off" },
-        { name: "Dan", status: "canteen" }
-      ]
-    };
+  function updateDateTime() {
+    const now = new Date();
+    const daysUa = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
+    const daysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-    function isNowInRange(rangeStr, now) {
-      const [start, end] = rangeStr.split('-').map(t => {
-        const [h, m] = t.split(':').map(Number);
-        return h * 60 + m;
-      });
-      const current = now.getHours() * 60 + now.getMinutes();
-      if (end < start) return current >= start || current < end; // crosses midnight
-      return current >= start && current < end;
-    }
+    const dayName = lang === 'en' ? daysEn[now.getDay()] : daysUa[now.getDay()];
+    const date = now.toLocaleDateString(lang === 'en' ? 'en-GB' : 'uk-UA');
+    const time = now.toLocaleTimeString(lang === 'en' ? 'en-GB' : 'uk-UA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
 
-    function updateCurrentShift(now) {
-      const day = now.toLocaleDateString('en', { weekday: 'long' });
-      let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
-      (shifts[day] || []).forEach(person => {
-        let line = "";
-        if (person.shifts) {
-          const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
-          line += activeShift
-            ? `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`
-            : `${person.name}`;
-        } else if (person.status === "off") {
-          line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">вихідний</span>`;
-        } else if (person.status === "canteen") {
-          line += `🍴 ${person.name} <span style="color:orange">столова</span>`;
-        }
-        shiftHTML += `<div>${line}</div>`;
-      });
-      document.getElementById('currentShift').innerHTML = shiftHTML;
-    }
+    const html = `
+      <h3>🕒 ${lang === 'en' ? 'Current Time' : 'Поточний час'}</h3>
+      <div>📅 ${lang === 'en' ? 'Date' : 'Дата'}: ${date}</div>
+      <div>📆 ${lang === 'en' ? 'Day' : 'День'}: ${dayName}</div>
+      <div>⏰ ${lang === 'en' ? 'Time' : 'Час'}: ${time}</div>
+    `;
 
-function renderDailyEvents() {
-  const eventsHTML = `
-    <h3>📅 ${lang === 'en' ? 'Daily Events' : 'Щоденні події'}</h3>
-    <ul style="list-style: none; padding-left: 0;">
-      <li>🚩 ${lang === 'en' ? 'Navy UA Flag Raising' : 'Підняття прапору ВМС'} – 08:00</li>
-      <li>🧹 ${lang === 'en' ? 'Small Cleaning' : 'Мале прибирання'} – 08:30</li>
-      <li>🕯 ${lang === 'en' ? 'Morning Formation & Fallen Remembrance' : 'Малий збір та вшанування полеглих воїнів'} – 09:00</li>
-    </ul>`;
-  document.getElementById("events").innerHTML = eventsHTML;
-}
+    document.getElementById("dateTime").innerHTML = html;
+  }
 
+  const shifts = {
+    "Tuesday": [
+      { name: "Yarik", shifts: ["09:00-12:00", "21:00-00:00"] },
+      { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
+      { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
+      { name: "Yura", shifts: ["18:00-21:00", "06:00-09:00"] },
+      { name: "Gurikhanyan", status: "off" },
+      { name: "Katran", status: "canteen" }
+    ],
+    "Wednesday": [
+      { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
+      { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
+      { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
+      { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
+      { name: "Yarik", status: "off" },
+      { name: "Yura", status: "canteen" }
+    ],
+    "Thursday": [
+      { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
+      { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
+      { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"] },
+      { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
+      { name: "Zhenya", status: "off" },
+      { name: "Dan", status: "canteen" }
+    ]
+  };
 
-    async function checkAirAlert() {
-      try {
-        const res = await fetch("https://alerts.com.ua/api/states");
-        const data = await res.json();
-        const odessaRegion = data.states.find(state => state.name === "Одеська");
-        const alertEl = document.getElementById("airAlert");
-        if (odessaRegion && odessaRegion.alert) {
-          alertEl.textContent = `🚨 ${langData[lang].airAlert}`;
-          alertEl.style.color = "red";
-          if (Notification.permission === "granted") {
-            new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
-          }
-        } else {
-          alertEl.textContent = `✅ ${lang === 'en' ? 'All clear' : 'Все спокійно'}`;
-          alertEl.style.color = "var(--accent)";
-        }
-      } catch (e) {
-        console.error("Air alert error:", e);
-        document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} недоступна`;
+  function isNowInRange(rangeStr, now) {
+    const [start, end] = rangeStr.split('-').map(t => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    });
+    const current = now.getHours() * 60 + now.getMinutes();
+    if (end < start) return current >= start || current < end; // crosses midnight
+    return current >= start && current < end;
+  }
+
+  function updateCurrentShift() {
+    const now = new Date();
+    const day = now.toLocaleDateString('en', { weekday: 'long' });
+    let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
+    (shifts[day] || []).forEach(person => {
+      let line = "";
+      if (person.shifts) {
+        const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
+        line += activeShift
+          ? `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`
+          : `${person.name}`;
+      } else if (person.status === "off") {
+        line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">${lang === 'en' ? 'Off' : 'Вихідний'}</span>`;
+      } else if (person.status === "canteen") {
+        line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
       }
-    }
+      shiftHTML += `<div>${line}</div>`;
+    });
+    document.getElementById('currentShift').innerHTML = shiftHTML;
+  }
 
-    async function loadWeather() {
-      try {
-        const res = await fetch("https://wttr.in/Odesa?format=j1");
-        const data = await res.json();
-        const current = data.current_condition[0];
-        const weatherHTML = `
-          <h3>🌤 ${lang === 'en' ? 'Weather' : 'Погода'}</h3>
-          <div>🌡 ${lang === 'en' ? 'Temp' : 'Темп'}: ${current.temp_C}°C (${current.FeelsLikeC}°C)</div>
-          <div>💨 ${lang === 'en' ? 'Wind' : 'Вітер'}: ${current.windspeedKmph} km/h (${current.winddir16Point})</div>
-          <div>💧 ${lang === 'en' ? 'Humidity' : 'Вологість'}: ${current.humidity}%</div>
-          <div>🔵 ${lang === 'en' ? 'Pressure' : 'Тиск'}: ${current.pressure} hPa</div>
-          <div>🌫 ${lang === 'en' ? 'Visibility' : 'Видимість'}: ${current.visibility} km</div>
-          <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--accent);">
-            🌅 <strong>${lang === 'en' ? 'Sunrise' : 'Схід сонця'}:</strong> ${data.weather[0].astronomy[0].sunrise}<br>
-            🌇 <strong>${lang === 'en' ? 'Sunset' : 'Захід сонця'}:</strong> ${data.weather[0].astronomy[0].sunset}
-          </div>`;
-        document.getElementById("weather").innerHTML = weatherHTML;
-      } catch (e) {
-        console.error("Weather error:", e);
-        document.getElementById("weather").textContent = `⚠️ ${lang === 'en' ? 'Weather unavailable' : 'Погода недоступна'}`;
+  function renderDailyEvents() {
+    const eventsHTML = `
+      <h3>📅 ${lang === 'en' ? 'Daily Events' : 'Щоденні події'}</h3>
+      <ul style="list-style: none; padding-left: 0;">
+        <li>🚩 ${lang === 'en' ? 'Navy UA Flag Raising' : 'Підняття прапору ВМС'} – 08:00</li>
+        <li>🧹 ${lang === 'en' ? 'Small Cleaning' : 'Мале прибирання'} – 08:30</li>
+        <li>🕯 ${lang === 'en' ? 'Morning Formation & Fallen Remembrance' : 'Малий збір та вшанування полеглих воїнів'} – 09:00</li>
+      </ul>`;
+    document.getElementById("events").innerHTML = eventsHTML;
+  }
+
+  async function checkAirAlert() {
+    try {
+      const res = await fetch("https://alerts.com.ua/api/states");
+      const data = await res.json();
+      const odessaRegion = data.states.find(state => state.name === "Одеська");
+      const alertEl = document.getElementById("airAlert");
+      if (odessaRegion && odessaRegion.alert) {
+        alertEl.textContent = `🚨 ${langData[lang].airAlert}`;
+        alertEl.style.color = "red";
+        if (Notification.permission === "granted") {
+          new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
+        }
+      } else {
+        alertEl.textContent = `✅ ${lang === 'en' ? 'All clear' : 'Все спокійно'}`;
+        alertEl.style.color = "var(--accent)";
       }
+    } catch (e) {
+      console.error("Air alert error:", e);
+      document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} недоступна`;
     }
+  }
 
-    loadWeather();
-    renderDailyEvents();
-    checkAirAlert();
-    updateDateTime();
-    updateCurrentShift();
-    setInterval(updateDateTime, 1000);
-    setInterval(updateCurrentShift, 60 * 1000); //сек
-    setInterval(loadWeather, 600000); // 10 хвилин
-    setInterval(checkAirAlert, 300000); // 5 хвилин
-
-    if (Notification.permission !== "denied") {
-      Notification.requestPermission();
+  async function loadWeather() {
+    try {
+      const res = await fetch("https://wttr.in/Odesa?format=j1");
+      const data = await res.json();
+      const current = data.current_condition[0];
+      const weatherHTML = `
+        <h3>🌤 ${lang === 'en' ? 'Weather' : 'Погода'}</h3>
+        <div>🌡 ${lang === 'en' ? 'Temp' : 'Темп'}: ${current.temp_C}°C (${current.FeelsLikeC}°C)</div>
+        <div>💨 ${lang === 'en' ? 'Wind' : 'Вітер'}: ${current.windspeedKmph} km/h (${current.winddir16Point})</div>
+        <div>💧 ${lang === 'en' ? 'Humidity' : 'Вологість'}: ${current.humidity}%</div>
+        <div>🔵 ${lang === 'en' ? 'Pressure' : 'Тиск'}: ${current.pressure} hPa</div>
+        <div>🌫 ${lang === 'en' ? 'Visibility' : 'Видимість'}: ${current.visibility} km</div>
+        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--accent);">
+          🌅 <strong>${lang === 'en' ? 'Sunrise' : 'Схід сонця'}:</strong> ${data.weather[0].astronomy[0].sunrise}<br>
+          🌇 <strong>${lang === 'en' ? 'Sunset' : 'Захід сонця'}:</strong> ${data.weather[0].astronomy[0].sunset}
+        </div>`;
+      document.getElementById("weather").innerHTML = weatherHTML;
+    } catch (e) {
+      console.error("Weather error:", e);
+      document.getElementById("weather").textContent = `⚠️ ${lang === 'en' ? 'Weather unavailable' : 'Погода недоступна'}`;
     }
-  </script>
+  }
+
+  // Ініціалізація
+  loadWeather();
+  renderDailyEvents();
+  checkAirAlert();
+  updateDateTime();
+  updateCurrentShift(); // Виправлено: Виклик із поточним часом
+  setInterval(updateDateTime, 1000);
+  setInterval(updateCurrentShift, 60 * 1000); // Оновлення кожні 60 секундні
+  setInterval(loadWeather, 600000); // 10 хвилин
+  setInterval(checkAirAlert, 300000); // 5 хвилин
+
+  if (Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+</script>
 </body>
 </html>
