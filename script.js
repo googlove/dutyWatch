@@ -152,18 +152,33 @@ function renderDailyEvents() {
 
 async function checkAirAlert() {
   try {
-    const res = await fetch("https://alerts.com.ua/api/states");
-    const data = await res.json();
-    const odessa = data.states.find(s => s.name === "Одеська");
-    const alert = document.getElementById("airAlert");
-    if (odessa && odessa.alert) {
-      alert.textContent = `🚨 ${langData[lang].airAlert}`;
-      alert.style.color = "red";
-    } else {
-      alert.textContent = `✅ ${lang === 'en' ? 'All clear' : 'Все спокійно'}`;
-      alert.style.color = "var(--accent)";
+    const response = await fetch('https://api.alerts.in.ua/v1/iot/active_air_raid_alerts_by_oblast.json', {
+      headers: {
+        'Authorization':'4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203' // Замініть на ваш фактичний API ключ
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
-  } catch {
+    const data = await response.json();
+    const alertEl = document.getElementById("airAlert");
+
+    // Перевірка статусу для Одеської області
+    const odessaIndex = data.oblasts.indexOf("Одеська область");
+    const odessaStatus = odessaIndex !== -1 ? data.statuses[odessaIndex] : 'N';
+
+    if (odessaStatus === 'A' || odessaStatus === 'P') {
+      alertEl.textContent = `🚨 ${langData[lang].airAlert} (Одеська область)`;
+      alertEl.style.color = "red";
+      if (Notification.permission === "granted") {
+        new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
+      }
+    } else {
+      alertEl.textContent = `✅ ${lang === 'en' ? 'All clear in Odesa Oblast' : 'Все спокійно в Одеській області'}`;
+      alertEl.style.color = "var(--accent)";
+    }
+  } catch (e) {
+    console.error("Air alert error:", e);
     document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} недоступна`;
   }
 }
@@ -175,7 +190,7 @@ async function loadWeather() {
     const current = data.current_condition[0];
     const sun = data.weather[0].astronomy[0];
     document.getElementById("weather").innerHTML = `
-      <h3>🌤 ${lang === 'en' ? 'Weather' : 'Погода'}</h3>
+      <h3>🌤 ${lang === 'en' ? 'Weather in Odesa' : 'Погода в Одесі'}</h3>
       <div>🌡 ${current.temp_C}°C (Відчувається: ${current.FeelsLikeC}°C)</div>
       <div>💨 ${current.windspeedKmph} км/год (${current.winddir16Point})</div>
       <div>💧 ${current.humidity}%</div>
