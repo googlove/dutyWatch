@@ -154,7 +154,7 @@ async function checkAirAlert() {
   try {
     const response = await fetch('https://api.alerts.in.ua/v1/iot/active_air_raid_alerts_by_oblast.json', {
       headers: {
-        'Authorization':'4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203' // Замініть на ваш фактичний API ключ
+        'Authorization': Bearer '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203' // Замініть на ваш фактичний API ключ
       }
     });
     if (!response.ok) {
