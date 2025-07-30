@@ -152,11 +152,16 @@ function renderDailyEvents() {
 
 async function checkAirAlert() {
   try {
-    const response = await fetch('https://api.alerts.in.ua/v1/iot/active_air_raid_alerts_by_oblast.json', {
-      headers: {
-        'Authorization': 'Bearer 4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203' // Замініть на ваш фактичний API ключ
-      }
-    });
+    // Варіант 1: передача токена у URL (простіше)
+    const response = await fetch('https://api.alerts.in.ua/v1/alerts/active.json?token=4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203');
+    
+    // Або Варіант 2: передача токена у заголовку (як у вашому оригінальному коді, але з правильним URL)
+    // const response = await fetch('https://api.alerts.in.ua/v1/alerts/active.json', {
+    //   headers: {
+    //     'Authorization': 'Bearer 4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
+    //   }
+    // });
+
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
