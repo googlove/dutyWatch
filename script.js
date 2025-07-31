@@ -238,7 +238,7 @@ loadWeather();
 setInterval(updateDateTime, 1000);
 setInterval(updateCurrentShift, 60000);
 setInterval(loadWeather, 600000);
-setInterval(checkAirAlert, 300000);
+setInterval(checkAirAlert, 5 * 60 * 1000);
 
 if (Notification.permission !== "denied") {
   Notification.requestPermission();
