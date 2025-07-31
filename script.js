@@ -108,15 +108,16 @@ const shifts = {
   "Friday": [
     { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] },
     { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
+    { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"] }, // Виправлено: Yarik замість Zhenya
+    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] }, // Додано Katran
+    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] }, // Zhenya переміщено
     { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
-    { name: "Yarik", status: "off" },
     { name: "Gurikhanyan", status: "canteen" }
   ]
 };
 
 function updateCurrentShift() {
-  const now = new Date(); // Поточний час: 12:41 AM EEST, п'ятниця, 01 серпня 2025
+  const now = new Date(); // Поточний час: 12:43 AM EEST, п'ятниця, 01 серпня 2025
   const day = now.toLocaleDateString('en', { weekday: 'long' });
   let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
   let nextWatch = null;
@@ -185,7 +186,6 @@ function updateCurrentShift() {
 
   document.getElementById("currentShift").innerHTML = shiftHTML;
 }
-
 
 function renderDailyEvents() {
   document.getElementById("events").innerHTML = `
