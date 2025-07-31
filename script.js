@@ -116,7 +116,7 @@ const shifts = {
 };
 
 function updateCurrentShift() {
-  const now = new Date(); // Поточний час: 12:37 AM EEST, п'ятниця, 01 серпня 2025
+  const now = new Date(); // Поточний час: 12:41 AM EEST, п'ятниця, 01 серпня 2025
   const day = now.toLocaleDateString('en', { weekday: 'long' });
   let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
   let nextWatch = null;
@@ -135,34 +135,20 @@ function updateCurrentShift() {
       const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
       if (activeShift) {
         line += `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`;
-        // Визначаємо наступну зміну того ж працівника, якщо є
-        const currentShiftEnd = new Date(now);
-        const [endH, endM] = activeShift.split('-')[1].split(':').map(Number);
-        currentShiftEnd.setHours(endH, endM, 0, 0);
-        if (currentShiftEnd > now) {
-          const nextShift = person.shifts.find(s => {
-            const [nextStartH, nextStartM] = s.split('-')[0].split(':').map(Number);
-            const nextStart = new Date(now);
-            nextStart.setHours(nextStartH, nextStartM, 0, 0);
-            return nextStart > now && nextStart < currentShiftEnd.getTime() + 24 * 60 * 60 * 1000;
-          });
-          if (nextShift) {
-            const [nextStartH, nextStartM] = nextShift.split('-')[0].split(':').map(Number);
-            nextWatchTime = new Date(now);
-            nextWatchTime.setHours(nextStartH, nextStartM, 0, 0);
-            nextWatch = person.name;
-          }
-        }
       } else {
         line += `${person.name}`;
       }
 
-      // Пошук наступної зміни серед усіх змін дня
+      // Пошук наступної зміни серед усіх змін поточного дня до 09:00 наступного дня
       for (let shift of person.shifts) {
         const [startH, startM] = shift.split('-')[0].split(":").map(Number);
         const shiftStart = new Date(now);
         shiftStart.setHours(startH, startM, 0, 0);
-        if (shiftStart > now && (!nextWatchTime || shiftStart < nextWatchTime)) {
+        const nextDay09 = new Date(now);
+        nextDay09.setDate(nextDay09.getDate() + 1);
+        nextDay09.setHours(9, 0, 0, 0);
+
+        if (shiftStart > now && shiftStart < nextDay09 && (!nextWatchTime || shiftStart < nextWatchTime)) {
           nextWatch = person.name;
           nextWatchTime = shiftStart;
         }
@@ -175,16 +161,16 @@ function updateCurrentShift() {
     shiftHTML += `<div>${line}</div>`;
   });
 
-  // Якщо немає наступної зміни в поточний день або час після 06:00, шукаємо зміну з 09:00 наступного дня
-  if (!nextWatchTime || now.getHours() >= 6) {
+  // Якщо поточний час після 09:00 наступного дня або немає наступної зміни до 09:00, шукаємо 09:00 наступного дня
+  const nextDay09 = new Date(now);
+  nextDay09.setDate(nextDay09.getDate() + 1);
+  nextDay09.setHours(9, 0, 0, 0);
+  if (!nextWatchTime || now >= nextDay09) {
     const nextDayShifts = shifts[nextDay] || [];
     for (let person of nextDayShifts) {
       if (person.shifts && person.shifts.some(shift => shift.startsWith("09:00"))) {
-        const shiftStart = new Date(now);
-        shiftStart.setDate(shiftStart.getDate() + 1);
-        shiftStart.setHours(9, 0, 0, 0);
         nextWatch = person.name;
-        nextWatchTime = shiftStart;
+        nextWatchTime = nextDay09;
         break;
       }
     }
@@ -199,6 +185,7 @@ function updateCurrentShift() {
 
   document.getElementById("currentShift").innerHTML = shiftHTML;
 }
+
 
 function renderDailyEvents() {
   document.getElementById("events").innerHTML = `
