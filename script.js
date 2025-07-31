@@ -150,114 +150,120 @@ function renderDailyEvents() {
     </ul>`;
 }
 
-// Конфігурація API
 const ALERT_API_CONFIG = {
-  primary: {
-    url: 'https://api.alerts.in.ua/v1/alerts/active.json',
-    token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
-  },
-  backup: {
-    url: 'https://alerts.in.ua/api/states',
-    token: ''
-  }
-};
-
-async function fetchWithTimeout(url, options = {}, timeout = 5000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
-}
-
-async function checkPrimaryAPI() {
-  try {
-    const response = await fetchWithTimeout(
-      `${ALERT_API_CONFIG.primary.url}?token=${ALERT_API_CONFIG.primary.token}`
-    );
-    const data = await response.json();
-    
-    // Обробка для api.alerts.in.ua
-    return data.find(item => 
-      item.location_oblast && 
-      item.location_oblast.includes("Одеська")
-    );
-  } catch (error) {
-    console.warn("Primary API failed, trying backup...", error);
-    return null;
-  }
-}
-
-async function checkBackupAPI() {
-  try {
-    const response = await fetchWithTimeout(ALERT_API_CONFIG.backup.url);
-    const data = await response.json();
-    
-    // Обробка для alerts.in.ua
-    const odessaState = data.states.find(s => s.name === "Одеська область");
-    return odessaState && odessaState.alert ? odessaState : null;
-  } catch (error) {
-    console.warn("Backup API failed", error);
-    return null;
-  }
-}
-
-async function checkAirAlert() {
-  const alertEl = document.getElementById("airAlert");
-  
-  try {
-    // Спочатку пробуємо основне API
-    let alertData = await checkPrimaryAPI();
-    let apiSource = "основне";
-    
-    // Якщо основне не спрацювало - пробуємо резервне
-    if (!alertData) {
-      alertData = await checkBackupAPI();
-      apiSource = "резервне";
+    primary: {
+      url: 'https://api.alerts.in.ua/v1/alerts/active.json',
+      token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
+    },
+    backup: {
+      url: 'https://alerts.com.ua/api/states',
+      token: ''
     }
-    
-    console.log(`Дані отримані з ${apiSource} API:`, alertData);
-    
-    if (alertData) {
-      const isAlertActive = alertData.alert_type === 'air' || alertData.alert === true;
-      
-      if (isAlertActive) {
+  };
+
+  async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  async function checkPrimaryAPI() {
+    try {
+      const url = `${ALERT_API_CONFIG.primary.url}?token=${ALERT_API_CONFIG.primary.token}`;
+      const response = await fetchWithTimeout(url);
+      const data = await response.json();
+
+      console.log("Primary API response:", data);
+
+      return data.find(item =>
+        item.location_oblast &&
+        item.location_oblast.includes("Одеська")
+      );
+    } catch (error) {
+      console.warn("Primary API failed:", error);
+      return null;
+    }
+  }
+
+  async function checkBackupAPI() {
+    try {
+      const response = await fetchWithTimeout(ALERT_API_CONFIG.backup.url);
+      const data = await response.json();
+
+      console.log("Backup API response:", data);
+
+      const odessa = data.states.find(s => s.name === "Одеська область");
+      return odessa && odessa.alert ? odessa : null;
+    } catch (error) {
+      console.warn("Backup API failed:", error);
+      return null;
+    }
+  }
+
+  async function checkAirAlert(lang = 'ua') {
+    const alertEl = document.getElementById("airAlert");
+    if (!alertEl) return;
+
+    const langData = {
+      ua: {
+        airAlert: "Повітряна тривога",
+        calm: "Все спокійно в Одеській області",
+        error: "Не вдалося отримати статус тривоги"
+      },
+      en: {
+        airAlert: "Air Alert",
+        calm: "All clear in Odesa Oblast",
+        error: "Failed to get alert status"
+      }
+    };
+
+    try {
+      let alertData = await checkPrimaryAPI();
+      let apiSource = "primary";
+
+      if (!alertData) {
+        alertData = await checkBackupAPI();
+        apiSource = "backup";
+      }
+
+      console.log(`Data from ${apiSource} API:`, alertData);
+
+      const isActive = alertData && (alertData.alert_type === 'air' || alertData.alert === true);
+
+      if (isActive) {
         alertEl.textContent = `🚨 ${langData[lang].airAlert} (Одеська область)`;
         alertEl.style.color = "red";
-        
+
         if (Notification.permission === "granted") {
-          new Notification(`${langData[lang].airAlert}!`, { 
+          new Notification(`${langData[lang].airAlert}!`, {
             body: "Одеська область!"
           });
         }
       } else {
-        alertEl.textContent = `✅ ${lang === 'en' ? 'All clear in Odesa Oblast' : 'Все спокійно в Одеській області'}`;
+        alertEl.textContent = `✅ ${langData[lang].calm}`;
         alertEl.style.color = "green";
       }
-    } else {
-      throw new Error("Не вдалося отримати дані з жодного API");
+    } catch (e) {
+      console.error("Alert check error:", e);
+      alertEl.textContent = `⚠️ ${langData[lang].error}`;
+      alertEl.style.color = "orange";
     }
-  } catch (e) {
-    console.error("Помилка при перевірці тривоги:", e);
-    alertEl.textContent = `⚠️ ${lang === 'en' 
-      ? 'Failed to get alert status' 
-      : 'Не вдалося отримати статус тривоги'}`;
-    alertEl.style.color = "orange";
+
+    alertEl.title = `Оновлено: ${new Date().toLocaleTimeString()}`;
   }
+
   
-  // Додаємо час останнього оновлення
-  const now = new Date();
-  alertEl.title = `Останнє оновлення: ${now.toLocaleTimeString()}`;
-}
 
 
 async function loadWeather() {
