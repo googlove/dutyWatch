@@ -71,39 +71,38 @@ function isNowInRange(rangeStr, now) {
 }
 
 const shifts = {
-    "Tuesday": [
-      { name: "Yarik", shifts: ["09:00-12:00", "21:00-00:00"] },
-      { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
-      { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
-      { name: "Yura", shifts: ["18:00-21:00", "06:00-09:00"] },
-      { name: "Gurikhanyan", status: "off" },
-      { name: "Katran", status: "canteen" }
-    ],
-    "Wednesday": [
-      { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
-      { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
-      { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
-      { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
-      { name: "Yarik", status: "off" },
-      { name: "Yura", status: "canteen" }
-    ],
-    "Thursday": [
-      { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
-      { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-      { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"] },
-      { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
-      { name: "Zhenya", status: "off" },
-      { name: "Dan", status: "canteen" }
-    ],
-
- "Friday": [
-      { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] },
-      { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-      { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
-      { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
+  "Tuesday": [
+    { name: "Yarik", shifts: ["09:00-12:00", "21:00-00:00"] },
+    { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
+    { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
+    { name: "Yura", shifts: ["18:00-21:00", "06:00-09:00"] },
+    { name: "Gurikhanyan", status: "off" },
+    { name: "Katran", status: "canteen" }
+  ],
+  "Wednesday": [
+    { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
+    { name: "Zhenya", shifts: ["12:00-15:00", "00:00-03:00"] },
+    { name: "Dan", shifts: ["15:00-18:00", "03:00-06:00"] },
+    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
+    { name: "Yarik", status: "off" },
+    { name: "Yura", status: "canteen" }
+  ],
+  "Thursday": [
+    { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"] },
+    { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
+    { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"] },
+    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] },
+    { name: "Zhenya", status: "off" },
+    { name: "Dan", status: "canteen" }
+  ],
+  "Friday": [
+    { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] },
+    { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
+    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
+    { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
     { name: "Yarik", status: "off" },
     { name: "Gurikhanyan", status: "canteen" }
-  }
+  ]
 };
 
 
