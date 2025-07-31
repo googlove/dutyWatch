@@ -188,24 +188,40 @@ async function checkAirAlert() {
   }
 }
 
-async function loadWeather() {
-  try {
-    const res = await fetch("https://wttr.in/Odesa?format=j1");
-    const data = await res.json();
-    const current = data.current_condition[0];
-    const sun = data.weather[0].astronomy[0];
+import keys from './keys.js';
+
+const LAT = 45.4;   // широта Вилкове / Одеса
+const LON = 29.6;   // довгота
+
+// 1. Поточна погода
+fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${keys.20a36f8e1152244bbbd9ac296d3640f2}&units=metric`)
+  .then(res => res.json())
+  .then(data => {
+    const temp = data.main.temp;
+    const humidity = data.main.humidity;
+    const wind = data.wind.speed;
+    const pressure = data.main.pressure;
+    const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
+    const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
+
     document.getElementById("weather").innerHTML = `
-      <h3>🌤 ${lang === 'en' ? 'Weather in Odesa' : 'Погода в Одесі'}</h3>
-      <div>🌡 ${current.temp_C}°C (Відчувається: ${current.FeelsLikeC}°C)</div>
-      <div>💨 ${current.windspeedKmph} км/год (${current.winddir16Point})</div>
-      <div>💧 ${current.humidity}%</div>
-      <div>🔵 ${current.pressure} hPa</div>
-      <div>🌅 ${lang === 'en' ? 'Sunrise' : 'Схід'}: ${sun.sunrise}</div>
-      <div>🌇 ${lang === 'en' ? 'Sunset' : 'Захід'}: ${sun.sunset}</div>`;
-  } catch {
-    document.getElementById("weather").textContent = `⚠️ ${lang === 'en' ? 'Weather unavailable' : 'Погода недоступна'}`;
-  }
-}
+      🌡️ ${temp}°C<br>
+      💧 ${humidity}%<br>
+      🌬️ ${wind} м/с<br>
+      🧭 ${pressure} гПа<br>
+      🌅 ${sunrise} / 🌇 ${sunset}
+    `;
+  });
+
+// 2. Радіаційний фон (Air Quality Index)
+fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${LAT}&lon=${LON}&appid=${keys.427f7ef80457a39a26407e17ef0d604339190901}`)
+  .then(res => res.json())
+  .then(data => {
+    const aqi = data.list[0].main.aqi;
+    const meanings = ["Добре", "Задовільно", "Помірно", "Погано", "Дуже погано"];
+    document.getElementById("radiation").innerText = `☢️ AQI: ${aqi} (${meanings[aqi - 1]})`;
+  });
+
 
 // Ініціалізація
 updateDateTime();
