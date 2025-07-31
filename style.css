@@ -43,13 +43,19 @@ nav {
 
 
 .card {
-  background-color: var(--card);
-  padding: 1rem;
-  border-radius: 10px;
-  margin: 1rem auto;
-  max-width: 700px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  background-color: var(--card); /* темний фон */
+  border-radius: 16px;
+  padding: 16px;
+  margin: 12px 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.05);
 }
+.card h2 {
+  margin-top: 0;
+  font-size: 20px;
+  color: var(--text);
+}
+
 
 .controls {
   display: flex;
