@@ -61,13 +61,23 @@ function updateDateTime() {
   `;
 }
 
-function isNowInRange(rangeStr, now) {
-  const [start, end] = rangeStr.split('-').map(t => {
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-  });
-  const current = now.getHours() * 60 + now.getMinutes();
-  return end < start ? current >= start || current < end : current >= start && current < end;
+function isNowInRange(shift, now) {
+  const [start, end] = shift.split('-');
+  const [startH, startM] = start.split(':').map(Number);
+  const [endH, endM] = end.split(':').map(Number);
+
+  const startTime = new Date(now);
+  startTime.setHours(startH, startM, 0, 0);
+
+  const endTime = new Date(now);
+  endTime.setHours(endH, endM, 0, 0);
+
+  // Якщо кінець менше або дорівнює початку (тобто після півночі), додаємо день
+  if (endTime <= startTime) {
+    endTime.setDate(endTime.getDate() + 1);
+  }
+
+  return now >= startTime && now < endTime;
 }
 
 const shifts = {
@@ -357,7 +367,7 @@ checkAirAlert();
 loadWeather();
 
 setInterval(updateDateTime, 1000);
-setInterval(updateCurrentShift, 60000);
+setInterval(updateCurrentShift, 60 * 1000);
 setInterval(loadWeather, 600000);
 setInterval(checkAirAlert, 20000);
 
