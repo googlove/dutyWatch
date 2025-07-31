@@ -150,42 +150,101 @@ function renderDailyEvents() {
     </ul>`;
 }
 
+// Конфігурація API
+const ALERT_API_CONFIG = {
+  primary: {
+    url: 'https://api.alerts.in.ua/v1/alerts/active.json',
+    token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
+  },
+  backup: {
+    url: 'https://alerts.com.ua/api/states',
+    token: ''
+  }
+};
+
+async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+async function checkPrimaryAPI() {
+  try {
+    const response = await fetchWithTimeout(
+      `${ALERT_API_CONFIG.primary.url}?token=${ALERT_API_CONFIG.primary.token}`
+    );
+    const data = await response.json();
+    
+    // Обробка для api.alerts.in.ua
+    return data.find(item => 
+      item.location_oblast && 
+      item.location_oblast.includes("Одеська")
+    );
+  } catch (error) {
+    console.warn("Primary API failed, trying backup...", error);
+    return null;
+  }
+}
+
+async function checkBackupAPI() {
+  try {
+    const response = await fetchWithTimeout(ALERT_API_CONFIG.backup.url);
+    const data = await response.json();
+    
+    // Обробка для alerts.com.ua
+    const odessaState = data.states.find(s => s.name === "Одеська область");
+    return odessaState && odessaState.alert ? odessaState : null;
+  } catch (error) {
+    console.warn("Backup API failed", error);
+    return null;
+  }
+}
+
 async function checkAirAlert() {
   const alertEl = document.getElementById("airAlert");
   
   try {
-    console.log("Запит до API повітряних тривог...");
-    const response = await fetch('https://api.alerts.in.ua/v1/alerts/active.json?token=4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203');
+    // Спочатку пробуємо основне API
+    let alertData = await checkPrimaryAPI();
+    let apiSource = "основне";
     
-    if (!response.ok) {
-      throw new Error(`HTTP помилка! Статус: ${response.status}`);
+    // Якщо основне не спрацювало - пробуємо резервне
+    if (!alertData) {
+      alertData = await checkBackupAPI();
+      apiSource = "резервне";
     }
     
-    const data = await response.json();
-    console.log("Отримана відповідь від API:", data);
+    console.log(`Дані отримані з ${apiSource} API:`, alertData);
     
-    // Шукаємо тривогу для Одеської області
-    const odessaAlert = data.find(item => 
-      item.location_oblast && 
-      (item.location_oblast.includes("Одеська") || item.location_oblast.includes("Odessa"))
-    );
-    
-    console.log("Знайдена тривога для Одеси:", odessaAlert);
-    
-    if (odessaAlert) {
-      alertEl.textContent = `🚨 ${langData[lang].airAlert} (Одеська область)`;
-      alertEl.style.color = "red";
-      console.log("Тривога активна!");
+    if (alertData) {
+      const isAlertActive = alertData.alert_type === 'air' || alertData.alert === true;
       
-      if (Notification.permission === "granted") {
-        new Notification(`${langData[lang].airAlert}!`, { 
-          body: "Одеська область!"
-        });
+      if (isAlertActive) {
+        alertEl.textContent = `🚨 ${langData[lang].airAlert} (Одеська область)`;
+        alertEl.style.color = "red";
+        
+        if (Notification.permission === "granted") {
+          new Notification(`${langData[lang].airAlert}!`, { 
+            body: "Одеська область!"
+          });
+        }
+      } else {
+        alertEl.textContent = `✅ ${lang === 'en' ? 'All clear in Odesa Oblast' : 'Все спокійно в Одеській області'}`;
+        alertEl.style.color = "green";
       }
     } else {
-      alertEl.textContent = `✅ ${lang === 'en' ? 'All clear in Odesa Oblast' : 'Все спокійно в Одеській області'}`;
-      alertEl.style.color = "green";
-      console.log("Тривоги немає, все спокійно");
+      throw new Error("Не вдалося отримати дані з жодного API");
     }
   } catch (e) {
     console.error("Помилка при перевірці тривоги:", e);
@@ -197,9 +256,9 @@ async function checkAirAlert() {
   
   // Додаємо час останнього оновлення
   const now = new Date();
-  const timeString = now.toLocaleTimeString();
-  console.log(`Останнє оновлення: ${timeString}`);
+  alertEl.title = `Останнє оновлення: ${now.toLocaleTimeString()}`;
 }
+
 
 async function loadWeather() {
   try {
