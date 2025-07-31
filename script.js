@@ -152,31 +152,30 @@ function renderDailyEvents() {
 
 async function checkAirAlert() {
   try {
-    // Варіант 1: передача токена у URL (простіше)
     const response = await fetch('https://api.alerts.in.ua/v1/alerts/active.json?token=4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203');
     
-    // Або Варіант 2: передача токена у заголовку (як у вашому оригінальному коді, але з правильним URL)
-    // const response = await fetch('https://api.alerts.in.ua/v1/alerts/active.json', {
-    //   headers: {
-    //     'Authorization': 'Bearer 4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
-    //   }
-    // });
-
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
+    
     const data = await response.json();
     const alertEl = document.getElementById("airAlert");
+    
+    // Новий спосіб перевірки (актуальний для поточної версії API)
+    const odessaAlert = data.find(item => 
+      item.location_oblast === "Одеська" || 
+      item.location_oblast === "Одеська область"
+    );
 
-    // Перевірка статусу для Одеської області
-    const odessaIndex = data.oblasts.indexOf("Одеська область");
-    const odessaStatus = odessaIndex !== -1 ? data.statuses[odessaIndex] : 'N';
-
-    if (odessaStatus === 'A' || odessaStatus === 'P') {
+    if (odessaAlert && odessaAlert.alert_type === 'air') {
       alertEl.textContent = `🚨 ${langData[lang].airAlert} (Одеська область)`;
       alertEl.style.color = "red";
+      
       if (Notification.permission === "granted") {
-        new Notification(`${langData[lang].airAlert}!`, { body: "Одеська область!" });
+        new Notification(`${langData[lang].airAlert}!`, { 
+          body: "Одеська область!",
+          icon: '/path/to/alert-icon.png'
+        });
       }
     } else {
       alertEl.textContent = `✅ ${lang === 'en' ? 'All clear in Odesa Oblast' : 'Все спокійно в Одеській області'}`;
@@ -184,7 +183,10 @@ async function checkAirAlert() {
     }
   } catch (e) {
     console.error("Air alert error:", e);
-    document.getElementById("airAlert").textContent = `⚠️ ${langData[lang].airAlert} недоступна`;
+    document.getElementById("airAlert").textContent = `⚠️ ${lang === 'en' 
+      ? 'Air alert data unavailable' 
+      : 'Дані про тривогу недоступні'}`;
+    document.getElementById("airAlert").style.color = "orange";
   }
 }
 
