@@ -221,6 +221,7 @@ fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${LAT}&lon=${LO
     const meanings = ["Добре", "Задовільно", "Помірно", "Погано", "Дуже погано"];
     document.getElementById("radiation").innerText = `☢️ AQI: ${aqi} (${meanings[aqi - 1]})`;
   });
+}
 
 
 // Ініціалізація
