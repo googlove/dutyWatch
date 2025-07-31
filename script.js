@@ -151,43 +151,54 @@ function renderDailyEvents() {
 }
 
 async function checkAirAlert() {
+  const alertEl = document.getElementById("airAlert");
+  
   try {
+    console.log("Запит до API повітряних тривог...");
     const response = await fetch('https://api.alerts.in.ua/v1/alerts/active.json?token=4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203');
     
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP помилка! Статус: ${response.status}`);
     }
     
     const data = await response.json();
-    const alertEl = document.getElementById("airAlert");
+    console.log("Отримана відповідь від API:", data);
     
-    // Новий спосіб перевірки (актуальний для поточної версії API)
+    // Шукаємо тривогу для Одеської області
     const odessaAlert = data.find(item => 
-      item.location_oblast === "Одеська" || 
-      item.location_oblast === "Одеська область"
+      item.location_oblast && 
+      (item.location_oblast.includes("Одеська") || item.location_oblast.includes("Odessa"))
     );
-
-    if (odessaAlert && odessaAlert.alert_type === 'air') {
+    
+    console.log("Знайдена тривога для Одеси:", odessaAlert);
+    
+    if (odessaAlert) {
       alertEl.textContent = `🚨 ${langData[lang].airAlert} (Одеська область)`;
       alertEl.style.color = "red";
+      console.log("Тривога активна!");
       
       if (Notification.permission === "granted") {
         new Notification(`${langData[lang].airAlert}!`, { 
-          body: "Одеська область!",
-          icon: '/path/to/alert-icon.png'
+          body: "Одеська область!"
         });
       }
     } else {
       alertEl.textContent = `✅ ${lang === 'en' ? 'All clear in Odesa Oblast' : 'Все спокійно в Одеській області'}`;
-      alertEl.style.color = "var(--accent)";
+      alertEl.style.color = "green";
+      console.log("Тривоги немає, все спокійно");
     }
   } catch (e) {
-    console.error("Air alert error:", e);
-    document.getElementById("airAlert").textContent = `⚠️ ${lang === 'en' 
-      ? 'Air alert data unavailable' 
-      : 'Дані про тривогу недоступні'}`;
-    document.getElementById("airAlert").style.color = "orange";
+    console.error("Помилка при перевірці тривоги:", e);
+    alertEl.textContent = `⚠️ ${lang === 'en' 
+      ? 'Failed to get alert status' 
+      : 'Не вдалося отримати статус тривоги'}`;
+    alertEl.style.color = "orange";
   }
+  
+  // Додаємо час останнього оновлення
+  const now = new Date();
+  const timeString = now.toLocaleTimeString();
+  console.log(`Останнє оновлення: ${timeString}`);
 }
 
 async function loadWeather() {
