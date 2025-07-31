@@ -156,7 +156,7 @@ const ALERT_API_CONFIG = {
       token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
     },
     backup: {
-      url: 'https://alerts.com.ua/api/states',
+      url: 'https://alerts.in.ua/api/states',
       token: ''
     }
   };
