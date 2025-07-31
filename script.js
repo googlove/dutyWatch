@@ -188,21 +188,18 @@ async function checkAirAlert() {
   }
 }
 
-import keys from './keys.js';
-
-const LAT = 45.4;   // широта Вилкове / Одеса
-const LON = 29.6;   // довгота
-
-// 1. Поточна погода
-fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${keys.20a36f8e1152244bbbd9ac296d3640f2}&units=metric`)
-  .then(res => res.json())
-  .then(data => {
-    const temp = data.main.temp;
-    const humidity = data.main.humidity;
-    const wind = data.wind.speed;
-    const pressure = data.main.pressure;
-    const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
-    const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
+async function loadWeather() {
+  try {
+    // 1. Поточна погода
+    const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${45.4}&lon=${29.6}&appid=20a36f8e1152244bbbd9ac296d3640f2&units=metric`);
+    const weatherData = await weatherResponse.json();
+    
+    const temp = weatherData.main.temp;
+    const humidity = weatherData.main.humidity;
+    const wind = weatherData.wind.speed;
+    const pressure = weatherData.main.pressure;
+    const sunrise = new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString();
+    const sunset = new Date(weatherData.sys.sunset * 1000).toLocaleTimeString();
 
     document.getElementById("weather").innerHTML = `
       🌡️ ${temp}°C<br>
@@ -211,18 +208,23 @@ fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&app
       🧭 ${pressure} гПа<br>
       🌅 ${sunrise} / 🌇 ${sunset}
     `;
-  });
 
-// 2. Радіаційний фон (Air Quality Index)
-fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${LAT}&lon=${LON}&appid=${keys.427f7ef80457a39a26407e17ef0d604339190901}`)
-  .then(res => res.json())
-  .then(data => {
-    const aqi = data.list[0].main.aqi;
-    const meanings = ["Добре", "Задовільно", "Помірно", "Погано", "Дуже погано"];
+    // 2. Радіаційний фон (Air Quality Index)
+    const aqiResponse = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${45.4}&lon=${29.6}&appid=20a36f8e1152244bbbd9ac296d3640f2`);
+    const aqiData = await aqiResponse.json();
+    
+    const aqi = aqiData.list[0].main.aqi;
+    const meanings = lang === 'en' 
+      ? ["Good", "Fair", "Moderate", "Poor", "Very Poor"] 
+      : ["Добре", "Задовільно", "Помірно", "Погано", "Дуже погано"];
+    
     document.getElementById("radiation").innerText = `☢️ AQI: ${aqi} (${meanings[aqi - 1]})`;
-  });
+  } catch (error) {
+    console.error("Weather loading error:", error);
+    document.getElementById("weather").innerHTML = "⚠️ Weather data unavailable";
+    document.getElementById("radiation").innerText = "⚠️ Radiation data unavailable";
+  }
 }
-
 
 // Ініціалізація
 updateDateTime();
