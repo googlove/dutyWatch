@@ -157,7 +157,7 @@ const ALERT_API_CONFIG = {
     token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
   },
   backup: {
-    url: 'https://alerts.com.ua/api/states',
+    url: 'https://alerts.in.ua/api/states',
     token: ''
   }
 };
@@ -202,7 +202,7 @@ async function checkBackupAPI() {
     const response = await fetchWithTimeout(ALERT_API_CONFIG.backup.url);
     const data = await response.json();
     
-    // Обробка для alerts.com.ua
+    // Обробка для alerts.in.ua
     const odessaState = data.states.find(s => s.name === "Одеська область");
     return odessaState && odessaState.alert ? odessaState : null;
   } catch (error) {
