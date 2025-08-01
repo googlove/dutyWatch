@@ -106,18 +106,18 @@ const shifts = {
     { name: "Dan", status: "canteen" }
   ],
   "Friday": [
-    { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] },
+    { name: "Yarik", shifts: ["03:00-06:00"] }, // Yarik на вахті з 03:00 до 06:00
+    { name: "Katran", shifts: ["06:00-09:00"] }, // Katran наступний
+    { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] }, // Нова зміна з 09:00
     { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"] }, // Виправлено: Yarik замість Zhenya
-    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"] }, // Додано Katran
-    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] }, // Zhenya переміщено
+    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
     { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
     { name: "Gurikhanyan", status: "canteen" }
   ]
 };
 
 function updateCurrentShift() {
-  const now = new Date(); // Поточний час: 12:43 AM EEST, п'ятниця, 01 серпня 2025
+  const now = new Date(); // Поточний час: 03:16 AM EEST, п'ятниця, 01 серпня 2025
   const day = now.toLocaleDateString('en', { weekday: 'long' });
   let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
   let nextWatch = null;
@@ -132,29 +132,32 @@ function updateCurrentShift() {
   // Перевірка змін поточного дня
   currentDayShifts.forEach(person => {
     let line = "";
+    const isYarik = person.name === "Yarik";
+    const offTime = new Date(now); // Час, коли Yarik стає вихідним
+    offTime.setHours(9, 0, 0, 0); // 09:00 сьогодні, п'ятниця
+
     if (person.shifts) {
       const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
       if (activeShift) {
         line += `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`;
+      } else if (isYarik && now >= offTime) {
+        line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">${lang === 'en' ? 'Off' : 'Вихідний'}</span>`;
       } else {
         line += `${person.name}`;
       }
 
-      // Пошук наступної зміни серед усіх змін поточного дня до 09:00 наступного дня
+      // Пошук наступної зміни серед усіх змін поточного дня до 09:00
       for (let shift of person.shifts) {
         const [startH, startM] = shift.split('-')[0].split(":").map(Number);
         const shiftStart = new Date(now);
         shiftStart.setHours(startH, startM, 0, 0);
-        const nextDay09 = new Date(now);
-        nextDay09.setDate(nextDay09.getDate() + 1);
-        nextDay09.setHours(9, 0, 0, 0);
 
-        if (shiftStart > now && shiftStart < nextDay09 && (!nextWatchTime || shiftStart < nextWatchTime)) {
+        if (shiftStart > now && shiftStart < offTime && (!nextWatchTime || shiftStart < nextWatchTime) && !(isYarik && now >= offTime)) {
           nextWatch = person.name;
           nextWatchTime = shiftStart;
         }
       }
-    } else if (person.status === "off") {
+    } else if (person.status === "off" || (isYarik && now >= offTime)) {
       line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">${lang === 'en' ? 'Off' : 'Вихідний'}</span>`;
     } else if (person.status === "canteen") {
       line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
@@ -162,16 +165,15 @@ function updateCurrentShift() {
     shiftHTML += `<div>${line}</div>`;
   });
 
-  // Якщо поточний час після 09:00 наступного дня або немає наступної зміни до 09:00, шукаємо 09:00 наступного дня
-  const nextDay09 = new Date(now);
-  nextDay09.setDate(nextDay09.getDate() + 1);
-  nextDay09.setHours(9, 0, 0, 0);
-  if (!nextWatchTime || now >= nextDay09) {
-    const nextDayShifts = shifts[nextDay] || [];
+  // Якщо поточний час після 09:00 або немає наступної зміни до 09:00, шукаємо наступну зміну
+  const offTime = new Date(now);
+  offTime.setHours(9, 0, 0, 0);
+  if (!nextWatchTime || now >= offTime) {
+    const nextDayShifts = shifts[day] || []; // Залишаємося в поточному дні після 09:00
     for (let person of nextDayShifts) {
       if (person.shifts && person.shifts.some(shift => shift.startsWith("09:00"))) {
         nextWatch = person.name;
-        nextWatchTime = nextDay09;
+        nextWatchTime = new Date(offTime);
         break;
       }
     }
