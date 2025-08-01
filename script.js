@@ -172,8 +172,7 @@ function renderDailyEvents() {
 
 const ALERT_API_CONFIG = {
   primary: {
-    url: 'https://api.alerts.in.ua/v1/alerts/active.json',
-    token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
+    url: 'https://api.alerts.in.ua/v1/alerts/active.json?token=<4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203>'
   }
 };
 
