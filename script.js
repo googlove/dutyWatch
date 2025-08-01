@@ -106,18 +106,23 @@ const shifts = {
     { name: "Dan", status: "canteen" }
   ],
   "Friday": [
-    { name: "Yarik", shifts: ["03:00-06:00"] }, // Yarik на вахті з 03:00 до 06:00
-    { name: "Katran", shifts: ["06:00-09:00"] }, // Katran наступний
+    { name: "Yarik", shifts: ["03:00-06:00"] }, // Тільки Yarik на 03:00-06:00
+    { name: "Katran", shifts: ["06:00-09:00"] }, // Тільки Katran на 06:00-09:00
     { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] }, // Нова зміна з 09:00
-    { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
-    { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
+    { name: "Gurikhanyan", status: "canteen" }
+  ],
+  "Saturday": [
+    { name: "Zhenya", shifts: ["00:00-03:00", "12:00-15:00"] }, // Zhenya в суботу наступної ночі
+    { name: "Dan", shifts: ["03:00-06:00", "15:00-18:00"] },
+    { name: "Yura", shifts: ["06:00-09:00", "18:00-21:00"] },
+    { name: "Katran", shifts: ["09:00-12:00", "21:00-00:00"] },
+    { name: "Yarik", status: "off" }, // Yarik офф після п'ятниці
     { name: "Gurikhanyan", status: "canteen" }
   ]
 };
 
 function updateCurrentShift() {
-  const now = new Date(); // Поточний час: 03:16 AM EEST, п'ятниця, 01 серпня 2025
+  const now = new Date(); // Поточний час: 03:20 AM EEST, п'ятниця, 01 серпня 2025
   const day = now.toLocaleDateString('en', { weekday: 'long' });
   let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
   let nextWatch = null;
@@ -127,14 +132,14 @@ function updateCurrentShift() {
   const currentDayShifts = shifts[day] || [];
   const days = Object.keys(shifts);
   const currentDayIndex = days.indexOf(day);
-  const nextDay = days[(currentDayIndex + 1) % days.length]; // "Saturday" (але в даних його немає, цикл йде до вівторка)
+  const nextDay = days[(currentDayIndex + 1) % days.length]; // "Saturday"
 
   // Перевірка змін поточного дня
   currentDayShifts.forEach(person => {
     let line = "";
     const isYarik = person.name === "Yarik";
     const offTime = new Date(now); // Час, коли Yarik стає вихідним
-    offTime.setHours(9, 0, 0, 0); // 09:00 сьогодні, п'ятниця
+    offTime.setHours(9, 0, 0, 0); // 09:00 п'ятниця
 
     if (person.shifts) {
       const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
@@ -165,15 +170,21 @@ function updateCurrentShift() {
     shiftHTML += `<div>${line}</div>`;
   });
 
-  // Якщо поточний час після 09:00 або немає наступної зміни до 09:00, шукаємо наступну зміну
+  // Якщо поточний час після 09:00 або немає наступної зміни до 09:00, шукаємо зміну наступного дня
   const offTime = new Date(now);
   offTime.setHours(9, 0, 0, 0);
   if (!nextWatchTime || now >= offTime) {
-    const nextDayShifts = shifts[day] || []; // Залишаємося в поточному дні після 09:00
+    const nextDayShifts = shifts[nextDay] || [];
     for (let person of nextDayShifts) {
-      if (person.shifts && person.shifts.some(shift => shift.startsWith("09:00"))) {
+      if (person.shifts && person.shifts.some(shift => {
+        const [startH] = shift.split('-')[0].split(":").map(Number);
+        return startH >= (now >= offTime ? 0 : 9); // Починаємо з 00:00 або 09:00
+      })) {
+        const [startH, startM] = person.shifts[0].split('-')[0].split(":").map(Number);
+        nextWatchTime = new Date(now);
+        nextWatchTime.setDate(nextWatchTime.getDate() + (now >= offTime ? 1 : 0));
+        nextWatchTime.setHours(startH, startM, 0, 0);
         nextWatch = person.name;
-        nextWatchTime = new Date(offTime);
         break;
       }
     }
@@ -188,6 +199,8 @@ function updateCurrentShift() {
 
   document.getElementById("currentShift").innerHTML = shiftHTML;
 }
+
+
 
 function renderDailyEvents() {
   document.getElementById("events").innerHTML = `
