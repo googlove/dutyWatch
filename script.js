@@ -67,11 +67,14 @@ function isNowInRange(shift, now) {
   const [endH, endM] = end.split(':').map(Number);
 
   const startTime = new Date(now);
-  startTime.setFullYear(2025, 7, 1); // 01 серпня 2025
+  const year = startTime.getFullYear();
+  const month = startTime.getMonth();
+  const day = parseInt(shift.date.split('-')[2]);
+  startTime.setFullYear(year, month, day);
   startTime.setHours(startH, startM, 0, 0);
 
   const endTime = new Date(now);
-  endTime.setFullYear(2025, 7, 1); // 01 серпня 2025
+  endTime.setFullYear(year, month, day);
   endTime.setHours(endH, endM, 0, 0);
 
   // Якщо кінець менше або дорівнює початку (тобто після півночі), додаємо день
@@ -84,25 +87,31 @@ function isNowInRange(shift, now) {
 
 const shifts = {
   "2025-08-01": [
-    // Незавершена вахта з четверга до 09:00
-    { name: "Katran", shifts: ["06:00-09:00"], status: "unfinished" },
-
-    // Основний графік п’ятниці з 09:00
-    { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] },
-    { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
-    { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
-
-    // Вихідний
-    { name: "Yarik", status: "off" },
-
-    // Столова
+    // Незавершені вахти (з четверга до 09:00 п'ятниці)
+    { name: "Gurikhanyan", shifts: [{ time: "09:00-12:00", date: "2025-08-01" }, { time: "21:00-00:00", date: "2025-08-01" }], status: "unfinished" },
+    { name: "Yura", shifts: [{ time: "12:00-15:00", date: "2025-08-01" }, { time: "00:00-03:00", date: "2025-08-01" }], status: "unfinished" },
+    { name: "Yarik", shifts: [{ time: "15:00-18:00", date: "2025-08-01" }, { time: "03:00-06:00", date: "2025-08-01" }], status: "unfinished" },
+    { name: "Katran", shifts: [{ time: "18:00-21:00", date: "2025-08-01" }, { time: "06:00-09:00", date: "2025-08-01" }], status: "unfinished" },
+    // Новий графік з 09:00 п'ятниці
+    { name: "Dan", shifts: [{ time: "09:00-12:00", date: "2025-08-01" }, { time: "21:00-00:00", date: "2025-08-01" }] },
+    { name: "Yura", shifts: [{ time: "12:00-15:00", date: "2025-08-01" }, { time: "00:00-03:00", date: "2025-08-01" }] },
+    { name: "Yarik", shifts: [{ time: "03:00-06:00", date: "2025-08-01" }] },
+    { name: "Katran", shifts: [{ time: "06:00-09:00", date: "2025-08-01" }] },
+    { name: "Denis", shifts: [{ time: "18:00-21:00", date: "2025-08-01" }] },
     { name: "Gurikhanyan", status: "canteen" }
+  ],
+  "2025-08-02": [
+    { name: "Yarik", shifts: [{ time: "09:00-12:00", date: "2025-08-02" }, { time: "21:00-00:00", date: "2025-08-02" }] },
+    { name: "Gurikhanyan", shifts: [{ time: "12:00-15:00", date: "2025-08-02" }, { time: "00:00-03:00", date: "2025-08-02" }] },
+    { name: "Zhenya", shifts: [{ time: "15:00-18:00", date: "2025-08-02" }, { time: "03:00-06:00", date: "2025-08-02" }] },
+    { name: "Denis", shifts: [{ time: "18:00-21:00", date: "2025-08-02" }, { time: "06:00-09:00", date: "2025-08-02" }] },
+    { name: "Dan", status: "off" },
+    { name: "Yura", status: "canteen" }
   ]
 };
 
 function updateCurrentShift() {
-  const now = new Date(); // Поточний час: 05:33 AM EEST, п'ятниця, 01 серпня 2025
+  const now = new Date(); // Поточний час: 12:38 PM EEST, п'ятниця, 01 серпня 2025
   const dateStr = now.toISOString().split('T')[0]; // Формат дати: "2025-08-01"
   let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
   let nextWatch = null;
@@ -121,28 +130,28 @@ function updateCurrentShift() {
     transitionTime.setHours(9, 0, 0, 0);     // 09:00 п'ятниця
 
     if (person.shifts) {
-      const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
+      const activeShift = person.shifts.find(shift => isNowInRange(shift));
       if (activeShift) {
         if (!activePerson) { // Дозволяємо тільки одну активну вахту
           activePerson = person.name;
           if (isUnfinished) {
-            line += `<span style="color:orange">⚠️</span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift}, незавершено)</small>`;
+            line += `<span style="color:orange">⚠️</span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift.time}, незавершено)</small>`;
           } else {
-            line += `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift})</small>`;
+            line += `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${activeShift.time})</small>`;
           }
         }
       } else if (now >= transitionTime && !isUnfinished) {
         // Пошук активних вахт тільки після 09:00 з нового графіка
         const newShift = person.shifts.find(shift => {
-          const [startH, startM] = shift.split('-')[0].split(":").map(Number);
+          const [startH, startM] = shift.time.split('-')[0].split(":").map(Number);
           const shiftStart = new Date(now);
-          shiftStart.setFullYear(2025, 7, 1);
+          shiftStart.setFullYear(2025, 7, parseInt(shift.date.split('-')[2]) - 1);
           shiftStart.setHours(startH, startM, 0, 0);
-          return shiftStart >= transitionTime && isNowInRange(shift, now);
+          return shiftStart >= transitionTime && isNowInRange(shift);
         });
         if (newShift && !activePerson) {
           activePerson = person.name;
-          line += `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${newShift})</small>`;
+          line += `<span class="dot"></span> ${person.name} <span class="online">${langData[lang].onWatch}</span> <small>(${newShift.time})</small>`;
         }
       } else {
         line += `${person.name}`;
@@ -150,9 +159,9 @@ function updateCurrentShift() {
 
       // Пошук наступної зміни
       for (let shift of person.shifts) {
-        const [startH, startM] = shift.split('-')[0].split(":").map(Number);
+        const [startH, startM] = shift.time.split('-')[0].split(":").map(Number);
         const shiftStart = new Date(now);
-        shiftStart.setFullYear(2025, 7, 1); // 01 серпня 2025
+        shiftStart.setFullYear(2025, 7, parseInt(shift.date.split('-')[2]) - 1);
         shiftStart.setHours(startH, startM, 0, 0);
 
         if (shiftStart > now && (!nextWatchTime || shiftStart < nextWatchTime) && 
@@ -161,20 +170,18 @@ function updateCurrentShift() {
           nextWatchTime = shiftStart;
         }
       }
-    } 
-else if (person.status === "canteen") {
-      line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
     } else if (person.status === "off") {
-      line += `🛌 ${person.name} <span style="color:gray">${lang === 'en' ? 'Day off' : 'Вихідний'}</span>`;
+      line += `<span style="color:red">🔴</span> ${person.name} <span style="color:red">${lang === 'en' ? 'Off' : 'Вихідний'}</span>`;
+    } else if (person.status === "canteen") {
+      line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
     }
-
     shiftHTML += `<div>${line}</div>`;
   });
 
   // Якщо немає наступної зміни або час після останньої вахти
   const lastShiftEnd = new Date(now);
-  lastShiftEnd.setFullYear(2025, 7, 1);
-  lastShiftEnd.setHours(21, 0, 0, 0); // Останній час вахти (21:00)
+  lastShiftEnd.setFullYear(2025, 7, 2); // Останній день — субота
+  lastShiftEnd.setHours(21, 0, 0, 0);   // Останній час вахти (21:00 суботи)
   if (!nextWatchTime || now >= lastShiftEnd) {
     shiftHTML += `<div><span style="color:gray">Вахти на сьогодні закінчилися</span></div>`;
   } else if (nextWatch && nextWatchTime) {
