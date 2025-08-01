@@ -170,10 +170,9 @@ function renderDailyEvents() {
     </ul>`;
 }
 
-// Конфігурація API
-// Використовуйте `region_id` для більш ефективного запиту.
-// ID Одеської області: 16
+
 const ALERT_API_CONFIG = {
+
   primary: {
     // URL для запиту тривог по конкретному регіону
     url: 'https://api.alerts.in.ua/v1/alerts/active',
