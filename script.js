@@ -277,11 +277,6 @@ async function checkAirAlert(lang = 'ua') {
   alertEl.title = `Оновлено: ${new Date().toLocaleTimeString()}`;
 }
 
-// Запит дозволу на нотифікації
-if (Notification && Notification.permission !== "granted") {
-  Notification.requestPermission();
-}
-
   
 
 
