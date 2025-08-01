@@ -84,17 +84,19 @@ function isNowInRange(shift, now) {
 
 const shifts = {
   "2025-08-01": [
-    // Незавершені вахти (з четверга до 09:00 п'ятниці)
-    { name: "Gurikhanyan", shifts: ["09:00-12:00", "21:00-00:00"], status: "unfinished" }, // З четверга
-    { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"], status: "unfinished" },       // До 03:00 п'ятниці
-    { name: "Yarik", shifts: ["15:00-18:00", "03:00-06:00"], status: "unfinished" },     // До 06:00 п'ятниці
-    { name: "Katran", shifts: ["18:00-21:00", "06:00-09:00"], status: "unfinished" },   // До 09:00 п'ятниці
-    // Новий графік з 09:00 п'ятниці
+    // Незавершена вахта з четверга до 09:00
+    { name: "Katran", shifts: ["06:00-09:00"], status: "unfinished" },
+
+    // Основний графік п’ятниці з 09:00
     { name: "Dan", shifts: ["09:00-12:00", "21:00-00:00"] },
     { name: "Yura", shifts: ["12:00-15:00", "00:00-03:00"] },
-    { name: "Yarik", shifts: ["03:00-06:00"] }, // Перекриває незавершену вахту, але з нового графіка
-    { name: "Katran", shifts: ["06:00-09:00"] },
-    { name: "Denis", shifts: ["18:00-21:00"] },
+    { name: "Zhenya", shifts: ["15:00-18:00", "03:00-06:00"] },
+    { name: "Denis", shifts: ["18:00-21:00", "06:00-09:00"] },
+
+    // Вихідний
+    { name: "Yarik", status: "off" },
+
+    // Столова
     { name: "Gurikhanyan", status: "canteen" }
   ]
 };
