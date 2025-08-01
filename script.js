@@ -25,7 +25,7 @@ function setLang(l) {
 function translate() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    el.textContent = langData[lang][key];
+    el.textContent = langData[lang] && langData[lang][key] ? langData[lang][key] : key; // Захист від невизначених значень
   });
 }
 
@@ -62,27 +62,23 @@ function updateDateTime() {
 }
 
 function isNowInRange(shift, now) {
-  const [start, end] = shift.split('-');
+  const [start, end] = shift.time.split('-');
   const [startH, startM] = start.split(':').map(Number);
   const [endH, endM] = end.split(':').map(Number);
 
-  const startTime = new Date(now);
-  const year = startTime.getFullYear();
-  const month = startTime.getMonth();
-  const day = parseInt(shift.date.split('-')[2]);
-  startTime.setFullYear(year, month, day);
-  startTime.setHours(startH, startM, 0, 0);
-
-  const endTime = new Date(now);
-  endTime.setFullYear(year, month, day);
-  endTime.setHours(endH, endM, 0, 0);
+  const [year, month, day] = shift.date.split('-').map(Number);
+  const startTime = new Date(year, month - 1, day, startH, startM, 0, 0);
+  const endTime = new Date(year, month - 1, day, endH, endM, 0, 0);
 
   // Якщо кінець менше або дорівнює початку (тобто після півночі), додаємо день
   if (endTime <= startTime) {
     endTime.setDate(endTime.getDate() + 1);
   }
 
-  return now >= startTime && now < endTime;
+  // Перевіряємо, чи дата now збігається з датою вахти
+  const shiftDate = new Date(year, month - 1, day);
+  const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return shiftDate.getTime() === nowDate.getTime() && now >= startTime && now < endTime;
 }
 
 const shifts = {
@@ -111,7 +107,7 @@ const shifts = {
 };
 
 function updateCurrentShift() {
-  const now = new Date(); // Поточний час: 12:38 PM EEST, п'ятниця, 01 серпня 2025
+  const now = new Date(); // Поточний час: 12:42 PM EEST, п'ятниця, 01 серпня 2025
   const dateStr = now.toISOString().split('T')[0]; // Формат дати: "2025-08-01"
   let shiftHTML = `<h3>${langData[lang].onWatch}:</h3>`;
   let nextWatch = null;
@@ -130,7 +126,7 @@ function updateCurrentShift() {
     transitionTime.setHours(9, 0, 0, 0);     // 09:00 п'ятниця
 
     if (person.shifts) {
-      const activeShift = person.shifts.find(shift => isNowInRange(shift));
+      const activeShift = person.shifts.find(shift => isNowInRange(shift, now));
       if (activeShift) {
         if (!activePerson) { // Дозволяємо тільки одну активну вахту
           activePerson = person.name;
@@ -145,9 +141,10 @@ function updateCurrentShift() {
         const newShift = person.shifts.find(shift => {
           const [startH, startM] = shift.time.split('-')[0].split(":").map(Number);
           const shiftStart = new Date(now);
-          shiftStart.setFullYear(2025, 7, parseInt(shift.date.split('-')[2]) - 1);
+          const [year, month, day] = shift.date.split('-').map(Number);
+          shiftStart.setFullYear(year, month - 1, day);
           shiftStart.setHours(startH, startM, 0, 0);
-          return shiftStart >= transitionTime && isNowInRange(shift);
+          return shiftStart >= transitionTime && isNowInRange(shift, now);
         });
         if (newShift && !activePerson) {
           activePerson = person.name;
@@ -161,7 +158,8 @@ function updateCurrentShift() {
       for (let shift of person.shifts) {
         const [startH, startM] = shift.time.split('-')[0].split(":").map(Number);
         const shiftStart = new Date(now);
-        shiftStart.setFullYear(2025, 7, parseInt(shift.date.split('-')[2]) - 1);
+        const [year, month, day] = shift.date.split('-').map(Number);
+        shiftStart.setFullYear(year, month - 1, day);
         shiftStart.setHours(startH, startM, 0, 0);
 
         if (shiftStart > now && (!nextWatchTime || shiftStart < nextWatchTime) && 
@@ -193,8 +191,6 @@ function updateCurrentShift() {
 
   document.getElementById("currentShift").innerHTML = shiftHTML;
 }
-
-
 
 function renderDailyEvents() {
   document.getElementById("events").innerHTML = `
@@ -288,15 +284,12 @@ async function checkAirAlert(lang = 'ua') {
   alertEl.title = `Оновлено: ${new Date().toLocaleTimeString()}`;
 }
 
-  
-
-
 async function loadWeather() {
   try {
     // 1. Поточна погода
     const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${45.4}&lon=${29.6}&appid=20a36f8e1152244bbbd9ac296d3640f2&units=metric`);
     const weatherData = await weatherResponse.json();
-    
+
     const temp = weatherData.main.temp;
     const humidity = weatherData.main.humidity;
     const wind = weatherData.wind.speed;
@@ -315,12 +308,12 @@ async function loadWeather() {
     // 2. Радіаційний фон (Air Quality Index)
     const aqiResponse = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${45.4}&lon=${29.6}&appid=20a36f8e1152244bbbd9ac296d3640f2`);
     const aqiData = await aqiResponse.json();
-    
+
     const aqi = aqiData.list[0].main.aqi;
     const meanings = lang === 'en' 
       ? ["Good", "Fair", "Moderate", "Poor", "Very Poor"] 
       : ["Добре", "Задовільно", "Помірно", "Погано", "Дуже погано"];
-    
+
     document.getElementById("radiation").innerText = `☢️ AQI: ${aqi} (${meanings[aqi - 1]})`;
   } catch (error) {
     console.error("Weather loading error:", error);
@@ -341,6 +334,8 @@ setInterval(updateCurrentShift, 60 * 1000);
 setInterval(loadWeather, 600000);
 setInterval(() => checkAirAlert('ua'), 30000);
 
-if (Notification.permission !== "denied") {
-  Notification.requestPermission();
+if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") console.log("Notification permission granted");
+  });
 }
