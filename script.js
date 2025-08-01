@@ -161,9 +161,13 @@ function updateCurrentShift() {
           nextWatchTime = shiftStart;
         }
       }
-    } else if (person.status === "canteen") {
+    } 
+else if (person.status === "canteen") {
       line += `🍴 ${person.name} <span style="color:orange">${lang === 'en' ? 'Canteen' : 'Столова'}</span>`;
+    } else if (person.status === "off") {
+      line += `🛌 ${person.name} <span style="color:gray">${lang === 'en' ? 'Day off' : 'Вихідний'}</span>`;
     }
+
     shiftHTML += `<div>${line}</div>`;
   });
 
