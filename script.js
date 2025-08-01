@@ -323,14 +323,17 @@ async function loadWeather() {
 updateDateTime();
 updateCurrentShift();
 renderDailyEvents();
-checkAirAlert();
 loadWeather();
 
 setInterval(updateDateTime, 1000);
 setInterval(updateCurrentShift, 60 * 1000);
 setInterval(loadWeather, 600000);
-setInterval(checkAirAlert, 60000); // Оновлюємо кожну хвилину
+
+document.addEventListener('DOMContentLoaded', () => {
+    checkAirAlert(); // Перший запуск
+    setInterval(checkAirAlert, 60000); // Оновлюємо кожну хвилину
 });
+
 
 if (Notification.permission !== "granted" && Notification.permission !== "denied") {
   Notification.requestPermission().then(permission => {
