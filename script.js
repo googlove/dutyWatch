@@ -197,10 +197,6 @@ const ALERT_API_CONFIG = {
   primary: {
     url: 'https://api.alerts.in.ua/v1/alerts/active.json',
     token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203'
-  },
-  backup: {
-    url: 'https://alerts.in.ua/api/states',
-    token: ''
   }
 };
 
@@ -214,9 +210,7 @@ async function fetchWithTimeout(url, options = {}, timeout = 5000) {
       signal: controller.signal
     });
     clearTimeout(timeoutId);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
@@ -230,9 +224,6 @@ async function checkPrimaryAPI() {
     const response = await fetchWithTimeout(url);
     const data = await response.json();
 
-    console.log("Primary API response:", data);
-
-    // Find alert for Odesa Oblast
     return data.alerts.find(item =>
       item.location_title && item.location_title.includes("Одеська область")
     ) || null;
@@ -242,107 +233,53 @@ async function checkPrimaryAPI() {
   }
 }
 
-async function checkBackupAPI() {
-  try {
-    const response = await fetchWithTimeout(ALERT_API_CONFIG.backup.url);
-    const data = await response.json();
-
-    console.log("Backup API response:", data);
-
-    // Find alert for Odesa Oblast
-    return data.states.find(s => s.name === "Одеська область") || null;
-  } catch (error) {
-    console.warn("Backup API failed:", error.message);
-    return null;
-  }
-}
-
 async function checkAirAlert(lang = 'ua') {
   const alertEl = document.getElementById("airAlert");
-  if (!alertEl) {
-    console.error("Element with ID 'airAlert' not found");
-    return;
-  }
+  if (!alertEl) return;
 
   const langData = {
     ua: {
       airAlert: "Повітряна тривога",
-      artillery: "Артилерійська небезпека",
-      urban: "Міські бої",
-      chemical: "Хімічна загроза",
-      nuclear: "Ядерна загроза",
       calm: "Все спокійно в Одеській області",
-      error: "Не вдалося отримати статус тривоги",
-      danger: "Небезпека"
+      error: "Не вдалося отримати статус тривоги"
     },
     en: {
       airAlert: "Air Alert",
-      artillery: "Artillery Danger",
-      urban: "Urban Fighting",
-      chemical: "Chemical Threat",
-      nuclear: "Nuclear Threat",
       calm: "All clear in Odesa Oblast",
-      error: "Failed to get alert status",
-      danger: "Danger"
+      error: "Failed to get alert status"
     }
   };
 
   try {
-    let alertData = await checkPrimaryAPI();
-    let apiSource = "primary";
-
-    if (!alertData) {
-      alertData = await checkBackupAPI();
-      apiSource = "backup";
-    }
-
-    console.log(`Data from ${apiSource} API:`, alertData);
-
-    if (alertData && (alertData.alert_type || alertData.alert)) {
-      const alertType = alertData.alert_type || (alertData.alert ? 'air' : null);
-      let alertMessage;
-
-      // Map alert_type to localized message
-      switch (alertType) {
-        case 'air':
-          alertMessage = langData[lang].airAlert;
-          break;
-        case 'artillery':
-          alertMessage = langData[lang].artillery;
-          break;
-        case 'urban':
-          alertMessage = langData[lang].urban;
-          break;
-        case 'chemical':
-          alertMessage = langData[lang].chemical;
-          break;
-        case 'nuclear':
-          alertMessage = langData[lang].nuclear;
-          break;
-        default:
-          alertMessage = langData[lang].danger;
-      }
-
-      alertEl.textContent = `🚨 ${alertMessage} (Одеська область)`;
-      alertEl.style.color = "red";
+    const alertData = await checkPrimaryAPI();
+    if (alertData) {
+      const msg = langData[lang].airAlert;
+      alertEl.textContent = `🚨 ${msg} (Одеська область)`;
+      alertEl.className = 'alert-danger';
 
       if (Notification.permission === "granted") {
-        new Notification(`${alertMessage}!`, {
-          body: `Одеська область: ${alertMessage}`
+        new Notification(`${msg}!`, {
+          body: `Одеська область: ${msg}`
         });
       }
     } else {
       alertEl.textContent = `✅ ${langData[lang].calm}`;
-      alertEl.style.color = "green";
+      alertEl.className = 'alert-calm';
     }
   } catch (e) {
     console.error("Alert check error:", e.message);
     alertEl.textContent = `⚠️ ${langData[lang].error}`;
-    alertEl.style.color = "orange";
+    alertEl.className = 'alert-error';
   }
 
   alertEl.title = `Оновлено: ${new Date().toLocaleTimeString()}`;
 }
+
+// Запит дозволу на нотифікації
+if (Notification && Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+
   
 
 
@@ -388,13 +325,13 @@ async function loadWeather() {
 updateDateTime();
 updateCurrentShift();
 renderDailyEvents();
-checkAirAlert();
+checkAirAlert('ua');
 loadWeather();
 
 setInterval(updateDateTime, 1000);
 setInterval(updateCurrentShift, 60 * 1000);
 setInterval(loadWeather, 600000);
-setInterval(checkAirAlert, 20000);
+setInterval(() => checkAirAlert('ua'), 30000);
 
 if (Notification.permission !== "denied") {
   Notification.requestPermission();
