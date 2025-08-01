@@ -170,12 +170,21 @@ function renderDailyEvents() {
     </ul>`;
 }
 
+// Конфігурація API
+// Використовуйте `region_id` для більш ефективного запиту.
+// ID Одеської області: 16
 const ALERT_API_CONFIG = {
   primary: {
-    url: 'https://api.alerts.in.ua/v1/alerts/active.json?token=<4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203>'
+    // URL для запиту тривог по конкретному регіону
+    url: 'https://api.alerts.in.ua/v1/alerts/active',
+    // Токен винесено в окрему властивість для зручності
+    token: '4526d87a4e6d58e6ebeb7743818488519f8041f2ab2203',
+    region_id: 16 // ID Одеської області
   }
 };
 
+// Функція для виконання запиту з таймаутом
+// Ця функція коректно обробляє помилки і прибирання таймауту
 async function fetchWithTimeout(url, options = {}, timeout = 5000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -185,71 +194,93 @@ async function fetchWithTimeout(url, options = {}, timeout = 5000) {
       ...options,
       signal: controller.signal
     });
+    // Прибираємо таймаут, якщо запит успішний
     clearTimeout(timeoutId);
-    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
     return response;
   } catch (error) {
+    // Прибираємо таймаут, якщо виникла помилка
     clearTimeout(timeoutId);
     throw error;
   }
 }
 
+// Функція для перевірки статусу тривоги в Одеській області
 async function checkPrimaryAPI() {
   try {
-    const url = `${ALERT_API_CONFIG.primary.url}?token=${ALERT_API_CONFIG.primary.token}`;
+    const config = ALERT_API_CONFIG.primary;
+    // Формуємо URL з токеном та ID регіону
+    const url = `${config.url}?token=${config.token}&region_id=${config.region_id}`;
+    
     const response = await fetchWithTimeout(url);
     const data = await response.json();
 
-    return data.alerts.find(item =>
-      item.location_title && item.location_title.includes("Одеська область")
-    ) || null;
+    // API повертає порожній масив, якщо тривог немає.
+    // Тому просто перевіряємо, чи масив не порожній.
+    return data.alerts.length > 0 ? data.alerts[0] : null;
   } catch (error) {
     console.warn("Primary API failed:", error.message);
     return null;
   }
 }
 
+// Головна функція для перевірки та оновлення DOM
 async function checkAirAlert(lang = 'ua') {
   const alertEl = document.getElementById("airAlert");
-  if (!alertEl) return;
+  if (!alertEl) {
+    console.error("Елемент з ID 'airAlert' не знайдено.");
+    return;
+  }
 
+  // Об'єкт з локалізацією
   const langData = {
     ua: {
       airAlert: "Повітряна тривога",
-      calm: "Все спокійно в Одеській області",
+      calm: "Все спокійно",
       error: "Не вдалося отримати статус тривоги"
     },
     en: {
       airAlert: "Air Alert",
-      calm: "All clear in Odesa Oblast",
+      calm: "All clear",
       error: "Failed to get alert status"
     }
   };
 
+  const messages = langData[lang];
+  const regionName = "Одеській області";
+
   try {
     const alertData = await checkPrimaryAPI();
+
     if (alertData) {
-      const msg = langData[lang].airAlert;
-      alertEl.textContent = `🚨 ${msg} (Одеська область)`;
+      // Якщо є тривога
+      alertEl.innerHTML = `🚨 **${messages.airAlert}** в ${regionName}`;
       alertEl.className = 'alert-danger';
 
+      // Відправка сповіщення (якщо дозволено)
       if (Notification.permission === "granted") {
-        new Notification(`${msg}!`, {
-          body: `Одеська область: ${msg}`
+        new Notification(`${messages.airAlert}!`, {
+          body: `${messages.airAlert} в ${regionName}`
         });
       }
     } else {
-      alertEl.textContent = `✅ ${langData[lang].calm}`;
+      // Якщо все спокійно
+      alertEl.innerHTML = `✅ ${messages.calm} в ${regionName}`;
       alertEl.className = 'alert-calm';
     }
   } catch (e) {
+    // Обробка помилок
     console.error("Alert check error:", e.message);
-    alertEl.textContent = `⚠️ ${langData[lang].error}`;
+    alertEl.innerHTML = `⚠️ ${messages.error}`;
     alertEl.className = 'alert-error';
   }
 
+  // Оновлюємо тайтл для відображення часу оновлення
   alertEl.title = `Оновлено: ${new Date().toLocaleTimeString()}`;
 }
+
 
 async function loadWeather() {
   try {
@@ -293,13 +324,14 @@ async function loadWeather() {
 updateDateTime();
 updateCurrentShift();
 renderDailyEvents();
-checkAirAlert('ua');
+checkAirAlert();
 loadWeather();
 
 setInterval(updateDateTime, 1000);
 setInterval(updateCurrentShift, 60 * 1000);
 setInterval(loadWeather, 600000);
-setInterval(() => checkAirAlert('ua'), 30000);
+setInterval(checkAirAlert, 60000); // Оновлюємо кожну хвилину
+});
 
 if (Notification.permission !== "granted" && Notification.permission !== "denied") {
   Notification.requestPermission().then(permission => {
