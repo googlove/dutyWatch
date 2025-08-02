@@ -95,8 +95,7 @@ const shifts = {
     { name: "Yarik", shifts: [{ time: "18:00-21:00", date: "2025-08-02" }, { time: "06:00-09:00", date: "2025-08-02" }] },
     { name: "Dan", status: "off" },
     { name: "Zhenya", status: "canteen" }
-  ]
-};
+  ],
 
 "2025-08-03": [
     { name: "Denis", shifts: [{ time: "09:00-12:00", date: "2025-08-03" }, { time: "21:00-00:00", date: "2025-08-03" }] },
