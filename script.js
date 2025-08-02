@@ -98,6 +98,16 @@ const shifts = {
   ]
 };
 
+"2025-08-03": [
+    { name: "Denis", shifts: [{ time: "09:00-12:00", date: "2025-08-03" }, { time: "21:00-00:00", date: "2025-08-03" }] },
+    { name: "Gurikhanyan", shifts: [{ time: "12:00-15:00", date: "2025-08-03" }, { time: "00:00-03:00", date: "2025-08-03" }] },
+    { name: "Dan", shifts: [{ time: "15:00-18:00", date: "2025-08-03" }, { time: "03:00-06:00", date: "2025-08-03" }] },
+    { name: "Zhenya", shifts: [{ time: "18:00-21:00", date: "2025-08-03" }, { time: "06:00-09:00", date: "2025-08-03" }] },
+    { name: "Yura", status: "off" },
+    { name: "Yarik", status: "canteen" }
+  ]
+};
+
 function updateCurrentShift() {
   const now = new Date(); // Поточний час: 12:49 PM EEST, п'ятниця, 01 серпня 2025
   const dateStr = now.toISOString().split('T')[0]; // Формат дати: "2025-08-01"
