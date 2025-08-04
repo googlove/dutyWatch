@@ -80,30 +80,12 @@ function isNowInRange(shift, now) {
 }
 
 const shifts = {
-  "2025-08-01": [
-    { name: "Dan", shifts: [{ time: "09:00-12:00", date: "2025-08-01" }, { time: "21:00-00:00", date: "2025-08-01" }] },
-    { name: "Yura", shifts: [{ time: "12:00-15:00", date: "2025-08-01" }, { time: "00:00-03:00", date: "2025-08-01" }] },
-    { name: "Zhenya", shifts: [{ time: "15:00-18:00", date: "2025-08-01" }, { time: "03:00-06:00", date: "2025-08-01" }] },
-    { name: "Denis", shifts: [{ time: "18:00-21:00", date: "2025-08-01" }, { time: "06:00-09:00", date: "2025-08-01" }] },
-    { name: "Yarik", status: "off" },
-    { name: "Gurikhanyan", status: "canteen" }
-  ],
-  "2025-08-02": [
-    { name: "Denis", shifts: [{ time: "09:00-12:00", date: "2025-08-02" }, { time: "21:00-00:00", date: "2025-08-02" }] },
-    { name: "Gurikhanyan", shifts: [{ time: "12:00-15:00", date: "2025-08-02" }, { time: "00:00-03:00", date: "2025-08-02" }] },
-    { name: "Yura", shifts: [{ time: "15:00-18:00", date: "2025-08-02" }, { time: "03:00-06:00", date: "2025-08-02" }] },
-    { name: "Yarik", shifts: [{ time: "18:00-21:00", date: "2025-08-02" }, { time: "06:00-09:00", date: "2025-08-02" }] },
-    { name: "Dan", status: "off" },
-    { name: "Zhenya", status: "canteen" }
-  ],
-
-"2025-08-03": [
-    { name: "Denis", shifts: [{ time: "09:00-12:00", date: "2025-08-03" }, { time: "21:00-00:00", date: "2025-08-03" }] },
-    { name: "Gurikhanyan", shifts: [{ time: "12:00-15:00", date: "2025-08-03" }, { time: "00:00-03:00", date: "2025-08-03" }] },
-    { name: "Dan", shifts: [{ time: "15:00-18:00", date: "2025-08-03" }, { time: "03:00-06:00", date: "2025-08-03" }] },
-    { name: "Zhenya", shifts: [{ time: "18:00-21:00", date: "2025-08-03" }, { time: "06:00-09:00", date: "2025-08-03" }] },
-    { name: "Yura", status: "off" },
-    { name: "Yarik", status: "canteen" }
+  "2025-08-04": [
+    { name: "Yura", shifts: [{ time: "09:00-12:00", date: "2025-08-04" }, { time: "21:00-00:00", date: "2025-08-04" }] },
+    { name: "Yarik", shifts: [{ time: "12:00-15:00", date: "2025-08-04" }, { time: "00:00-03:00", date: "2025-08-05" }] },
+    { name: "Zhenya", shifts: [{ time: "15:00-18:00", date: "2025-08-04" }, { time: "03:00-06:00", date: "2025-08-05" }] },
+    { name: "Gurikhanyan", shifts: [{ time: "18:00-21:00", date: "2025-08-04" }, { time: "06:00-09:00", date: "2025-08-05" }] },
+    { name: "Dan", status: "canteen" }
   ]
 };
 
