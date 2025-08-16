@@ -80,29 +80,23 @@ function isNowInRange(shift, now) {
 }
 
 const shifts = {
-  "2025-08-05": [
-    { name: "Dan", shifts: [{ time: "09:00-12:00", date: "2025-08-05" }, { time: "21:00-00:00", date: "2025-08-05" }] },
-    { name: "Zhenya", shifts: [{ time: "12:00-15:00", date: "2025-08-05" }, { time: "00:00-03:00", date: "2025-08-06" }] },
-    { name: "Yarik", shifts: [{ time: "15:00-18:00", date: "2025-08-05" }, { time: "03:00-06:00", date: "2025-08-06" }] },
-    { name: "Katran", shifts: [{ time: "18:00-21:00", date: "2025-08-05" }, { time: "06:00-09:00", date: "2025-08-06" }] },
-    { name: "Gurikhanyan", status: "off" },
-    { name: "Yura", status: "canteen" }
-  ],
-  "2025-08-06": [
-    { name: "Yura", shifts: [{ time: "09:00-12:00", date: "2025-08-06" }, { time: "21:00-00:00", date: "2025-08-06" }] },
-    { name: "Dan", shifts: [{ time: "12:00-15:00", date: "2025-08-06" }, { time: "00:00-03:00", date: "2025-08-07" }] },
-    { name: "Gurikhanyan", shifts: [{ time: "15:00-18:00", date: "2025-08-06" }, { time: "03:00-06:00", date: "2025-08-07" }] },
-    { name: "Yarik", shifts: [{ time: "18:00-21:00", date: "2025-08-06" }, { time: "06:00-09:00", date: "2025-08-07" }] },
-    { name: "Zhenya", status: "off" },
+  "2025-08-16": [
+    { name: "Yarik", shifts: [{ time: "09:00-13:00", date: "2025-08-16" }, { time: "21:00-01:00", date: "2025-08-17" }] },
+    { name: "Dan", shifts: [{ time: "13:00-17:00", date: "2025-08-16" }, { time: "01:00-05:00", date: "2025-08-17" }] },
+    { name: "Zhenya", shifts: [{ time: "17:00-21:00", date: "2025-08-16" }, { time: "05:00-09:00", date: "2025-08-17" }] },
     { name: "Katran", status: "canteen" }
   ],
-  "2025-08-07": [
-    { name: "Yura", shifts: [{ time: "09:00-12:00", date: "2025-08-07" }, { time: "21:00-00:00", date: "2025-08-07" }] },
-    { name: "Dan", shifts: [{ time: "12:00-15:00", date: "2025-08-07" }, { time: "00:00-03:00", date: "2025-08-08" }] },
-    { name: "Zhenya", shifts: [{ time: "15:00-18:00", date: "2025-08-07" }, { time: "03:00-06:00", date: "2025-08-08" }] },
-    { name: "Katran", shifts: [{ time: "18:00-21:00", date: "2025-08-07" }, { time: "06:00-09:00", date: "2025-08-08" }] },
-    { name: "Yarik", status: "off" },
-    { name: "Gurikhanyan", status: "canteen" }
+  "2025-08-17": [
+    { name: "Katran", shifts: [{ time: "09:00-13:00", date: "2025-08-17" }, { time: "21:00-01:00", date: "2025-08-18" }] },
+    { name: "Zhenya", shifts: [{ time: "13:00-17:00", date: "2025-08-17" }, { time: "01:00-05:00", date: "2025-08-18" }] },
+    { name: "Dan", shifts: [{ time: "17:00-21:00", date: "2025-08-17" }, { time: "05:00-09:00", date: "2025-08-18" }] },
+    { name: "Yarik", status: "canteen" }
+  ],
+  "2025-08-18": [
+    { name: "Katran", shifts: [{ time: "09:00-13:00", date: "2025-08-18" }, { time: "21:00-01:00", date: "2025-08-19" }] },
+    { name: "Yarik", shifts: [{ time: "13:00-17:00", date: "2025-08-18" }, { time: "01:00-05:00", date: "2025-08-19" }] },
+    { name: "Dan", shifts: [{ time: "17:00-21:00", date: "2025-08-18" }, { time: "05:00-09:00", date: "2025-08-19" }] },
+    { name: "Zhenya", status: "canteen" }
   ]
 };
 
